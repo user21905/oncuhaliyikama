@@ -497,27 +497,48 @@ app.get('/api/health', async (req, res) => {
 // Admin Login
 app.post('/api/admin/login', async (req, res) => {
     try {
+        console.log('Admin login isteği alındı');
         const { email, password } = req.body;
 
+        console.log('Login bilgileri:', { email, password: password ? '***' : 'boş' });
+
         if (!email || !password) {
+            console.log('E-posta veya şifre eksik');
             return res.status(400).json({
                 success: false,
                 message: 'E-posta ve şifre gerekli'
             });
         }
 
+        // JWT_SECRET kontrolü
+        if (!process.env.JWT_SECRET) {
+            console.error('JWT_SECRET environment variable bulunamadı!');
+            return res.status(500).json({
+                success: false,
+                message: 'Sunucu yapılandırma hatası'
+            });
+        }
+
         const userRepo = new UserRepository();
+        console.log('Kullanıcı aranıyor:', email);
+        
         const user = await userRepo.findByEmail(email);
+        console.log('Kullanıcı bulundu mu:', !!user);
 
         if (!user || user.role !== 'admin') {
+            console.log('Kullanıcı bulunamadı veya admin değil');
             return res.status(401).json({
                 success: false,
                 message: 'Geçersiz e-posta veya şifre'
             });
         }
 
+        console.log('Şifre kontrol ediliyor...');
         const isValidPassword = await bcrypt.compare(password, user.password);
+        console.log('Şifre geçerli mi:', isValidPassword);
+        
         if (!isValidPassword) {
+            console.log('Şifre geçersiz');
             return res.status(401).json({
                 success: false,
                 message: 'Geçersiz e-posta veya şifre'
@@ -525,15 +546,22 @@ app.post('/api/admin/login', async (req, res) => {
         }
 
         // Update last login
-        await userRepo.update(user._id, { lastLogin: new Date() });
+        try {
+            await userRepo.update(user._id, { lastLogin: new Date() });
+            console.log('Son giriş tarihi güncellendi');
+        } catch (updateError) {
+            console.warn('Son giriş tarihi güncellenemedi:', updateError.message);
+        }
 
         // Generate JWT token
+        console.log('JWT token oluşturuluyor...');
         const token = jwt.sign(
             { userId: user._id, email: user.email, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
 
+        console.log('Login başarılı, token oluşturuldu');
         res.json({
             success: true,
             message: 'Giriş başarılı',
@@ -549,7 +577,8 @@ app.post('/api/admin/login', async (req, res) => {
         console.error('Admin login error:', error);
         res.status(500).json({
             success: false,
-            message: 'Giriş işlemi başarısız'
+            message: 'Giriş işlemi başarısız',
+            error: process.env.NODE_ENV === 'development' ? error.message : 'Bir hata oluştu'
         });
     }
 });
