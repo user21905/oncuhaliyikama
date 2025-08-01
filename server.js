@@ -66,10 +66,7 @@ app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static dosyalar - Tüm dosyaları serve et
-app.use(express.static(__dirname));
-
-// Özel dosya route'ları
+// Static dosyalar - Sadece gerekli dosyalar
 app.get('/styles.css', (req, res) => {
     res.setHeader('Content-Type', 'text/css');
     res.sendFile(path.join(__dirname, 'styles.css'));
