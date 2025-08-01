@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "bismil-vinc",
   "builds": [
     {
       "src": "server.js",
@@ -9,48 +8,12 @@
   ],
   "routes": [
     {
-      "src": "/styles.css",
-      "dest": "/styles.css"
-    },
-    {
-      "src": "/script.js",
-      "dest": "/script.js"
-    },
-    {
-      "src": "/navbar.js",
-      "dest": "/navbar.js"
-    },
-    {
-      "src": "/footer.js",
-      "dest": "/footer.js"
+      "src": "/(.*\\.(css|js|html|ico|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot))",
+      "dest": "/$1"
     },
     {
       "src": "/admin/(.*)",
       "dest": "/admin/$1"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/admin",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/mobilvinchizmeti",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/insaatkurulumu",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/petrolkuyuhizmeti",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/petrolinsaatsahasi",
-      "dest": "/server.js"
     },
     {
       "src": "/(.*)",

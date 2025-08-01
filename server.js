@@ -67,15 +67,28 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Static dosyalar - Tüm dosyaları serve et
-app.use(express.static(__dirname, {
-    setHeaders: (res, path) => {
-        if (path.endsWith('.css')) {
-            res.setHeader('Content-Type', 'text/css');
-        } else if (path.endsWith('.js')) {
-            res.setHeader('Content-Type', 'application/javascript');
-        }
-    }
-}));
+app.use(express.static(__dirname));
+
+// Özel dosya route'ları
+app.get('/styles.css', (req, res) => {
+    res.setHeader('Content-Type', 'text/css');
+    res.sendFile(path.join(__dirname, 'styles.css'));
+});
+
+app.get('/script.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.sendFile(path.join(__dirname, 'script.js'));
+});
+
+app.get('/navbar.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.sendFile(path.join(__dirname, 'navbar.js'));
+});
+
+app.get('/footer.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.sendFile(path.join(__dirname, 'footer.js'));
+});
 
 // Admin klasörü için özel static servis
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
