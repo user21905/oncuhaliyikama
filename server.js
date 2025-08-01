@@ -66,18 +66,19 @@ app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static dosyalar - Vercel için düzenlendi
-if (process.env.NODE_ENV === 'production') {
-    // Production'da sadece gerekli dosyaları serve et
-    app.use('/admin', express.static(path.join(__dirname, 'admin')));
-    app.use('/styles.css', express.static(path.join(__dirname, 'styles.css')));
-    app.use('/script.js', express.static(path.join(__dirname, 'script.js')));
-    app.use('/navbar.js', express.static(path.join(__dirname, 'navbar.js')));
-    app.use('/footer.js', express.static(path.join(__dirname, 'footer.js')));
-} else {
-    // Development'ta tüm dosyaları serve et
-    app.use(express.static(__dirname));
-}
+// Static dosyalar - Tüm dosyaları serve et
+app.use(express.static(__dirname, {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+        } else if (path.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        }
+    }
+}));
+
+// Admin klasörü için özel static servis
+app.use('/admin', express.static(path.join(__dirname, 'admin')));
 
 // Admin Authentication Middleware
 const authenticateAdmin = async (req, res, next) => {
