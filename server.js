@@ -925,18 +925,29 @@ const startServer = async () => {
         await serviceRepo.initializeDefaultServices();
         console.log('✅ Varsayılan hizmetler oluşturuldu');
 
-        // Server'ı başlat
+        console.log(`🚀 Server hazır`);
+        console.log(`📱 Environment: ${process.env.NODE_ENV}`);
+    } catch (error) {
+        console.error('❌ Server başlatma hatası:', error);
+    }
+};
+
+// Vercel için export
+module.exports = app;
+
+// Development ortamında server'ı başlat
+if (process.env.NODE_ENV !== 'production') {
+    startServer().then(() => {
         app.listen(PORT, () => {
             console.log(`🚀 Server ${PORT} portunda çalışıyor`);
-            console.log(`📱 Environment: ${process.env.NODE_ENV}`);
             console.log(`🌐 URL: http://localhost:${PORT}`);
             console.log(`🔧 Admin Panel: http://localhost:${PORT}/admin`);
         });
-    } catch (error) {
-        console.error('❌ Server başlatma hatası:', error);
-        process.exit(1);
-    }
-};
+    });
+} else {
+    // Production ortamında sadece başlat
+    startServer();
+}
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
@@ -950,5 +961,3 @@ process.on('SIGINT', async () => {
     await mongooseConnection.disconnect();
     process.exit(0);
 });
-
-startServer();
