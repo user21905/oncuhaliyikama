@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bismil Vinç - Diyarbakır Mobil Vinç Hizmetleri | Profesyonel Vinç Kiralama</title>
+    <meta name="description" content="Diyarbakır'da 16 yıllık deneyimle mobil vinç hizmetleri. Bismil Vinç olarak petrol, inşaat ve şantiye kaldırma hizmetleri sunuyoruz. 7/24 hizmet, güvenli ve kaliteli çözümler.">
+    <meta name="keywords" content="bismil vinç, diyarbakır mobil vinç, mobil vinç kiralama, şantiye kaldırma hizmeti, petrol kuyusu vinç hizmetleri, inşaat kurulum hizmetleri">
+    <meta name="author" content="Bismil Vinç">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yourdomain.com/">
+    <meta property="og:title" content="Bismil Vinç - Diyarbakır Mobil Vinç Hizmetleri">
+    <meta property="og:description" content="Diyarbakır'da 16 yıllık deneyimle mobil vinç hizmetleri. Profesyonel vinç kiralama ve şantiye kaldırma hizmetleri.">
+    <meta property="og:image" content="https://yourdomain.com/images/bismil-vinc-logo.jpg">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://yourdomain.com/">
+    <meta property="twitter:title" content="Bismil Vinç - Diyarbakır Mobil Vinç Hizmetleri">
+    <meta property="twitter:description" content="Diyarbakır'da 16 yıllık deneyimle mobil vinç hizmetleri. Profesyonel vinç kiralama ve şantiye kaldırma hizmetleri.">
+    <meta property="twitter:image" content="https://yourdomain.com/images/bismil-vinc-logo.jpg">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://yourdomain.com/">
+    
+    <!-- Schema.org structured data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "Bismil Vinç",
+        "description": "Diyarbakır'da profesyonel mobil vinç ve kurulum hizmetleri. 16 yıllık deneyimle petrol, inşaat ve şantiye kaldırma hizmetleri.",
+        "url": "https://yourdomain.com",
+        "telephone": "+905551234567",
+        "email": "info@bismilvinc.com",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Bismil",
+            "addressLocality": "Diyarbakır",
+            "addressRegion": "Güneydoğu Anadolu",
+            "addressCountry": "TR"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 37.842249,
+            "longitude": 40.669449
+        },
+        "openingHours": "Mo-Su 00:00-23:59",
+        "priceRange": "$$",
+        "currenciesAccepted": "TRY",
+        "paymentAccepted": "Cash, Credit Card",
+        "areaServed": {
+            "@type": "City",
+            "name": "Diyarbakır"
+        },
+        "serviceArea": {
+            "@type": "City",
+            "name": "Diyarbakır"
+        },
+        "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Vinç Hizmetleri",
+            "itemListElement": [
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "Mobil Vinç Kiralama"
+                    }
+                },
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "İnşaat Kurulum Hizmetleri"
+                    }
+                },
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "Petrol Kuyusu Hizmetleri"
+                    }
+                },
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "Petrol ve İnşaat Sahası Kurulum ve Taşıma"
+                    }
+                }
+            ]
+        },
+        "sameAs": [
+            "https://www.facebook.com/bismilvinc",
+            "https://www.instagram.com/bismilvinc"
+        ],
+        "foundingDate": "2008",
+        "numberOfEmployees": "10-50",
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "reviewCount": "150"
+        }
+    }
+    </script>
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous" />
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img id="navbar-logo" src="" alt="Diyarbakır Bismil Vinç Logo - Mobil Vinç Hizmetleri" class="logo-image">
+                <h2>Bismil Vinç</h2>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#hero-section" class="nav-link">Ana Sayfa</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#services" class="nav-link">Hizmetler</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#about" class="nav-link">Hakkımızda</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#contact" class="nav-link">İletişim</a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Home Section -->
+    <section id="hero-section" class="home-section">
+        <div class="container">
+            <div class="home-content">
+                <h1 class="home-title">Bismil Vinç - Diyarbakır Mobil Vinç Hizmetleri</h1>
+                <p class="home-subtitle">Diyarbakır'da 16 yıllık deneyimle profesyonel mobil vinç kiralama ve şantiye kaldırma hizmetleri</p>
+                <div class="home-buttons">
+                    <a href="#contact" class="btn btn-primary">Diyarbakır Vinç Teklifi Alın</a>
+                    <a href="#services" class="btn btn-secondary">Mobil Vinç Hizmetlerimiz</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services">
+        <div class="container">
+            <h2>Diyarbakır Mobil Vinç Hizmetleri</h2>
+            <div class="services-intro">
+                <p>Bismil Vinç, 2008 yılından bu yana Diyarbakır merkezli olarak faaliyet gösteren ve sektörde güvenilirliği ile ön plana çıkan bir mobil vinç hizmetleri firmasıdır. Mobil vinç kiralama çözümlerimizle, başta petrol ve inşaat sektörleri olmak üzere birçok alanda profesyonel taşıma, kurulum ve şantiye kaldırma hizmetleri sunuyoruz.</p>
+            </div>
+            
+            <div class="services-grid">
+                <a href="/mobil-vinc-kiralama" class="service-card" data-service-slug="mobilvinchizmeti">
+                    <div class="service-image">
+                        <img src="" alt="Diyarbakır Mobil Vinç Kiralama - Bismil Vinç Profesyonel Mobil Vinç Hizmetleri" class="service-img" data-service-img="service_mobilvinchizmeti_img">
+                    </div>
+                    <div class="service-header">
+                        <div class="service-icon">
+                            <i class="fas fa-truck"></i>
+                        </div>
+                        <h3>Diyarbakır Mobil Vinç Kiralama</h3>
+                    </div>
+                    <p>Diyarbakır'da yüksek kapasiteli mobil vinç kiralama hizmetleri. Bismil Vinç olarak ağır yük taşıma ve şantiye kaldırma işlemlerini güvenli ve hızlı bir şekilde gerçekleştiriyoruz. Sanayi tesisleri, şantiyeler ve diğer iş sahalarında ihtiyaç duyulan mobil vinç hizmetleri için son teknoloji ekipmanlarımız ve uzman ekibimizle her zaman yanınızdayız.</p>
+                    <div class="service-link">
+                        <span>Mobil Vinç Kiralama Detayları</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+                
+                <a href="/insaat-kurulum-hizmetleri" class="service-card" data-service-slug="insaatkurulumu">
+                    <div class="service-image">
+                        <img src="" alt="Diyarbakır İnşaat Kurulum Hizmetleri - Bismil Vinç Şantiye Kaldırma Hizmeti" class="service-img" data-service-img="service_insaatkurulumu_img">
+                    </div>
+                    <div class="service-header">
+                        <div class="service-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <h3>Diyarbakır İnşaat Kurulum Hizmetleri</h3>
+                    </div>
+                    <p>Diyarbakır'da inşaat sektörü için profesyonel şantiye kaldırma hizmeti. Bismil Vinç olarak yüksek tonajlı yüklerin taşınması, montaj işlemleri ve yapı kurulumları gibi birçok aşamada mobil vinç desteği sağlıyoruz. Büyük ölçekli projelerde, zorlu koşullarda bile en yüksek güvenlik standartlarını gözeterek mobil vinç hizmeti veriyoruz.</p>
+                    <div class="service-link">
+                        <span>İnşaat Kurulum Hizmetleri Detayları</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+
+                <a href="/petrol-kuyusu-vinc-hizmetleri" class="service-card" data-service-slug="petrolkuyuhizmeti">
+                    <div class="service-image">
+                        <img src="" alt="Diyarbakır Petrol Kuyusu Vinç Hizmetleri - Bismil Vinç Petrol Sahası Mobil Vinç" class="service-img" data-service-img="service_petrolkuyuhizmeti_img">
+                    </div>
+                    <div class="service-header">
+                        <div class="service-icon">
+                            <i class="fas fa-oil-can"></i>
+                        </div>
+                        <h3>Diyarbakır Petrol Kuyusu Vinç Hizmetleri</h3>
+                    </div>
+                    <p>Diyarbakır petrol sahalarında gerçekleştirilen sondaj ve kuyu açma işlemlerinde, ağır ekipmanların güvenli bir şekilde taşınması ve yerleştirilmesi büyük önem taşır. Bismil Vinç olarak, petrol sahalarındaki operasyonlarınız için yüksek hassasiyetle mobil vinç desteği sunuyor, sahadaki süreçlerinizi hızlandırıyoruz.</p>
+                    <div class="service-link">
+                        <span>Petrol Kuyusu Vinç Hizmetleri Detayları</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+
+                <a href="/petrol-insaat-sahasi-kurulum" class="service-card" data-service-slug="petrolinsaatsahasi">
+                    <div class="service-image">
+                        <img src="" alt="Diyarbakır Petrol ve İnşaat Sahası Kurulum - Bismil Vinç Büyük Ölçekli Mobil Vinç Hizmetleri" class="service-img" data-service-img="service_petrolinsaatsahasi_img">
+                    </div>
+                    <div class="service-header">
+                        <div class="service-icon">
+                            <i class="fas fa-industry"></i>
+                        </div>
+                        <h3>Diyarbakır Petrol ve İnşaat Sahası Kurulum</h3>
+                    </div>
+                    <p>Diyarbakır'da büyük ölçekli petrol ve inşaat sahalarının kurulumunda, ağır makinelerin ve yapı elemanlarının taşınmasında, Bismil Vinç olarak profesyonel mobil vinç hizmetlerimizle güvenilir çözümler sağlıyoruz. Tesis montajları, çelik konstrüksiyon kurulumları ve saha lojistiği gibi operasyonlarda en iyi mobil vinç ekipmanı ve uzman kadromuzla hizmet veriyoruz.</p>
+                    <div class="service-link">
+                        <span>Petrol ve İnşaat Sahası Kurulum Detayları</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+            </div>
+
+            <div class="why-choose-us">
+                <h3>🚧 Neden Diyarbakır'da Bismil Vinç Mobil Vinç Hizmetleri?</h3>
+                <div class="features-list">
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Diyarbakır'da 16+ yıllık mobil vinç deneyimi</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Son teknoloji mobil vinç ekipmanları</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Güvenlik ve kalite odaklı mobil vinç hizmeti</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Diyarbakır'da zamanında ve sorunsuz şantiye kaldırma çözümleri</span>
+                    </div>
+                </div>
+                <p class="cta-text">Bismil Vinç olarak, Diyarbakır'da projelerinizi en güvenilir ve profesyonel şekilde tamamlamanız için buradayız! Bizimle iletişime geçin ve Diyarbakır mobil vinç kiralama ihtiyaçlarınıza özel çözümlerimizi keşfedin.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="faq-section">
+        <div class="container">
+            <h2>Diyarbakır Mobil Vinç Hizmetleri Sık Sorulan Sorular</h2>
+            <div class="faq-content">
+                <div class="faq-item">
+                    <h3>Diyarbakır'da mobil vinç kiralama fiyatları nasıl hesaplanır?</h3>
+                    <p>Diyarbakır'da mobil vinç kiralama fiyatları, vinç kapasitesi, kullanım süresi, mesafe ve proje türüne göre değişmektedir. Bismil Vinç olarak size en uygun fiyat teklifini sunmak için detaylı bilgi alıyoruz.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>Bismil Vinç hangi bölgelerde mobil vinç hizmeti veriyor?</h3>
+                    <p>Bismil Vinç, Diyarbakır merkez ve tüm ilçelerinde mobil vinç hizmeti vermektedir. Ayrıca Güneydoğu Anadolu bölgesindeki diğer illerde de şantiye kaldırma hizmetleri sunuyoruz.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>Mobil vinç kiralama için ne kadar önceden rezervasyon yapmalıyım?</h3>
+                    <p>Diyarbakır'da mobil vinç kiralama için en az 1 hafta önceden rezervasyon yapmanızı öneriyoruz. Büyük projeler için daha erken planlama yapılması gerekmektedir.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>Bismil Vinç'in mobil vinç ekipmanları hangi kapasitelerde?</h3>
+                    <p>Bismil Vinç olarak Diyarbakır'da 10 ton ile 500 ton arasında değişen kapasitelerde mobil vinç ekipmanlarımız bulunmaktadır. Projenize en uygun mobil vinç seçimi için uzman ekibimiz size yardımcı olur.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>Petrol sahalarında mobil vinç hizmeti veriyor musunuz?</h3>
+                    <p>Evet, Bismil Vinç olarak Diyarbakır petrol sahalarında özel ekipmanlarımızla mobil vinç hizmeti veriyoruz. Petrol kuyusu açma ve saha kurulum işlemlerinde 16 yıllık deneyimimizle hizmetinizdeyiz.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>Mobil vinç operatörleri sertifikalı mı?</h3>
+                    <p>Bismil Vinç'in tüm mobil vinç operatörleri gerekli sertifikalara sahiptir ve düzenli eğitimlerden geçmektedir. Diyarbakır'da güvenli mobil vinç hizmeti için kalifiye personel çalıştırıyoruz.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>7/24 mobil vinç hizmeti veriyor musunuz?</h3>
+                    <p>Evet, Bismil Vinç olarak Diyarbakır'da 7/24 mobil vinç hizmeti veriyoruz. Acil durumlar ve gece çalışmaları için her zaman hazırız.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>İnşaat projelerinde mobil vinç kiralama süreleri ne kadar?</h3>
+                    <p>Diyarbakır'da inşaat projelerinde mobil vinç kiralama süreleri projenin büyüklüğüne göre değişmektedir. Kısa süreli (1-7 gün) ve uzun süreli (aylık/yıllık) kiralama seçeneklerimiz mevcuttur.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2>Diyarbakır Bismil Vinç Hakkında</h2>
+                    <p>Bismil Vinç, 2008 yılında Diyarbakır'da kurulmuş olup, sektördeki 16 yılı aşkın deneyimiyle Diyarbakır mobil vinç hizmetleri alanında profesyonel çözümler sunmaktadır. Kuruluşumuzdan bu yana, kalite, güvenlik ve müşteri memnuniyeti ilkelerimizden ödün vermeden, inşaat ve petrol sektörleri başta olmak üzere birçok alanda uzmanlaşmış bir mobil vinç hizmeti anlayışı geliştirdik.</p>
+                    
+                    <p>Diyarbakır'da mobil vinç kiralama çözümlerimizle, ağır yük taşıma, montaj, saha kurulumları ve lojistik süreçlerinde güçlü ve güvenilir bir iş ortağı olarak faaliyet göstermekteyiz. Güvenli çalışma prensiplerimiz, deneyimli operatörlerimiz ve modern mobil vinç ekipmanlarımız sayesinde her projeye özel çözümler üretiyor, işlerinizi en hızlı ve verimli şekilde tamamlamanızı sağlıyoruz.</p>
+                    
+                    <div class="about-mission-vision">
+                        <div class="mission-vision-item">
+                            <h3><i class="fas fa-bullseye"></i> Bismil Vinç Misyonu</h3>
+                            <p>Bismil Vinç olarak, Diyarbakır'da güvenilir ve yenilikçi mobil vinç çözümleri sunarak, ağır yük taşımacılığı ve şantiye kaldırma hizmetlerinde sektörün en iyisi olmak için çalışıyoruz. İş güvenliği, kalite ve verimlilikten ödün vermeden, müşterilerimize en iyi mobil vinç hizmetini sunmayı hedefliyoruz.</p>
+                        </div>
+                        
+                        <div class="mission-vision-item">
+                            <h3><i class="fas fa-eye"></i> Bismil Vinç Vizyonu</h3>
+                            <p>Diyarbakır ve tüm güneydoğuda mobil vinç hizmetleri alanında öncü bir marka haline gelerek, teknolojik gelişmeleri yakından takip eden, sektörde fark yaratan bir mobil vinç firması olmak.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="about-values">
+                        <h3><i class="fas fa-star"></i> Değerlerimiz</h3>
+                        <div class="values-list">
+                            <div class="value-item">
+                                <i class="fas fa-check-circle"></i>
+                                <div>
+                                    <strong>Güvenlik</strong> – İş sağlığı ve güvenliği bizim için her zaman önceliklidir.
+                                </div>
+                            </div>
+                            <div class="value-item">
+                                <i class="fas fa-check-circle"></i>
+                                <div>
+                                    <strong>Profesyonellik</strong> – Alanında uzman ekibimizle en kaliteli hizmeti sunarız.
+                                </div>
+                            </div>
+                            <div class="value-item">
+                                <i class="fas fa-check-circle"></i>
+                                <div>
+                                    <strong>Müşteri Memnuniyeti</strong> – İşimizi zamanında ve eksiksiz tamamlayarak, müşterilerimizin beklentilerini karşılarız.
+                                </div>
+                            </div>
+                            <div class="value-item">
+                                <i class="fas fa-check-circle"></i>
+                                <div>
+                                    <strong>Teknoloji ve Yenilik</strong> – En son vinç sistemlerini ve teknikleri kullanarak, işlerinizi daha verimli hale getiririz.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="about-conclusion">Bugüne kadar Diyarbakır'da tamamladığımız projeler ve kazandığımız müşteri güveni ile mobil vinç sektörümüzde güçlü bir yer edinmiş bulunuyoruz. Bismil Vinç, Diyarbakır'da yüksek kalite ve güvenlik standartlarına bağlı kalarak mobil vinç hizmetlerinde büyümeye ve gelişmeye devam etmektedir.</p>
+                    
+                    <div class="about-stats">
+                        <div class="stat">
+                            <h3>16+</h3>
+                            <p>Yıl Deneyim</p>
+                        </div>
+                        <div class="stat">
+                            <h3>500+</h3>
+                            <p>Tamamlanan Proje</p>
+                        </div>
+                        <div class="stat">
+                            <h3>%100</h3>
+                            <p>Güvenlik Kaydı</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Diyarbakır Bismil Vinç İletişim</h2>
+                <p>Diyarbakır mobil vinç kiralama için bizimle iletişime geçin</p>
+            </div>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <a href="tel:0555 123 45 67" class="contact-item clickable">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Telefon</h3>
+                            <span class="contact-text">0555 123 45 67</span>
+                        </div>
+                    </a>
+                    <a href="https://wa.me/905551234567?text=Merhaba!%20Bismil%20Vinç%20hizmetleri%20hakkında%20bilgi%20almak%20istiyorum." target="_blank" class="contact-item clickable">
+                        <div class="contact-icon">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>WhatsApp</h3>
+                            <span class="contact-text">0555 123 45 67</span>
+                        </div>
+                    </a>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Adres</h3>
+                            <p>Bismil, Diyarbakır, Türkiye</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Çalışma Saatleri</h3>
+                            <p>7/24 Hizmet</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form-container">
+                    <form class="contact-form" id="contactForm">
+                        <div class="form-group">
+                            <input type="text" id="name" name="name" placeholder="Adınız Soyadınız" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" id="phone" name="phone" placeholder="Telefon Numaranız" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="email" name="email" placeholder="E-posta Adresiniz">
+                        </div>
+                        <div class="form-group">
+                            <select id="service" name="service" required>
+                                <option value="">Diyarbakır Mobil Vinç Hizmeti Seçiniz</option>
+                                <option value="mobile-crane">Diyarbakır Mobil Vinç Kiralama</option>
+                                <option value="construction">Diyarbakır İnşaat Kurulum Hizmetleri</option>
+                                <option value="oil-well">Diyarbakır Petrol Kuyusu Vinç Hizmetleri</option>
+                                <option value="oil-construction">Diyarbakır Petrol ve İnşaat Sahası Kurulum</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="message" name="message" placeholder="Diyarbakır mobil vinç proje detaylarınızı yazın..." rows="4"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Diyarbakır Vinç Teklifi Gönder</button>
+                    </form>
+                </div>
+            </div>
+            <div class="map-container">
+                <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12345.67890!2d40.669449!3d37.842249!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzfCsDUwJzMyLjEiTiA0MMKwNDAnMTEuMCJF!5e0!3m2!1str!2str!4v1234567890"
+                    width="100%" 
+                    height="400" 
+                    style="border:0; border-radius: 12px;" 
+                    allowfullscreen="" 
+                    loading="lazy" 
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3 id="footer-company-name">Diyarbakır Bismil Vinç</h3>
+                    <p id="footer-description">Diyarbakır'da 16 yıllık deneyimle profesyonel mobil vinç kiralama ve şantiye kaldırma hizmetleri. Güvenli, hızlı ve kaliteli mobil vinç çözümleri.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Diyarbakır Vinç Hızlı Linkler</h4>
+                    <ul>
+                        <li><a href="#hero-section" id="footer-home-link">Ana Sayfa</a></li>
+                        <li><a href="#services" id="footer-services-link">Diyarbakır Mobil Vinç Hizmetleri</a></li>
+                        <li><a href="#about" id="footer-about-link">Diyarbakır Bismil Vinç Hakkında</a></li>
+                        <li><a href="#contact" id="footer-contact-link">Diyarbakır Vinç İletişim</a></li>
+                        <li><a href="#faq" id="footer-faq-link">Diyarbakır Vinç Sık Sorulan Sorular</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Diyarbakır Mobil Vinç Hizmetlerimiz</h4>
+                    <ul>
+                        <li><a href="/mobil-vinc-kiralama" id="footer-service1">Diyarbakır Mobil Vinç Kiralama</a></li>
+                        <li><a href="/insaat-kurulum-hizmetleri" id="footer-service2">Diyarbakır İnşaat Kurulum Hizmetleri</a></li>
+                        <li><a href="/petrol-kuyusu-vinc-hizmetleri" id="footer-service3">Diyarbakır Petrol Kuyusu Vinç Hizmetleri</a></li>
+                        <li><a href="/petrol-insaat-sahasi-kurulum" id="footer-service4">Diyarbakır Petrol ve İnşaat Sahası Kurulum</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>İletişim</h4>
+                    <p><i class="fas fa-phone"></i> <a href="tel:0555 123 45 67" id="footer-phone" class="phone-number">0555 123 45 67</a></p>
+                    <p><i class="fas fa-phone"></i> <a href="tel:0555 123 45 67" id="footer-phone2" class="phone-number">0555 123 45 67</a></p>
+                    <p><i class="fab fa-whatsapp"></i> <a href="https://wa.me/905551234567" id="footer-whatsapp" class="phone-number">0555 123 45 67</a></p>
+                    <p><i class="fas fa-envelope"></i> <a href="mailto:info@bismilvinc.com" id="footer-email">info@bismilvinc.com</a></p>
+                    <p><i class="fas fa-map-marker-alt"></i> <span id="footer-address">Bismil, Diyarbakır</span></p>
+                    <p><i class="fas fa-clock"></i> <span id="footer-working-hours">7/24 Hizmet</span></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p id="footer-copyright">&copy; 2024 Bismil Vinç. Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="navbar.js"></script>
+    <script src="footer.js"></script>
+</body>
+</html> 

@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bismil Vinç - Admin Panel</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Login Screen -->
+        <div id="loginScreen" class="login-screen">
+            <div class="login-container">
+                <div class="login-header">
+                    <h1><i class="fas fa-cogs"></i> Bismil Vinç</h1>
+                    <p>Admin Panel</p>
+                </div>
+                <form id="loginForm" class="login-form">
+                    <div class="form-group">
+                        <label for="email">E-posta</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Şifre</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i> Giriş Yap
+                    </button>
+                </form>
+                <div id="loginError" class="error-message" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="dashboard" class="dashboard" style="display: none;">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h2><i class="fas fa-cogs"></i> Admin Panel</h2>
+                </div>
+                <nav class="sidebar-nav">
+                    <ul>
+                        <li>
+                            <a href="#dashboard" class="nav-link active" data-section="dashboard">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#services" class="nav-link" data-section="services">
+                                <i class="fas fa-truck"></i>
+                                <span>Hizmetler</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#pages" class="nav-link" data-section="pages">
+                                <i class="fas fa-file-alt"></i>
+                                <span>Sayfa İçerikleri</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#theme" class="nav-link" data-section="theme">
+                                <i class="fas fa-palette"></i>
+                                <span>Tema Ayarları</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#media" class="nav-link" data-section="media">
+                                <i class="fas fa-images"></i>
+                                <span>Medya Yönetimi</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#contacts" class="nav-link" data-section="contacts">
+                                <i class="fas fa-envelope"></i>
+                                <span>İletişim Mesajları</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link" data-section="footer">
+                                <i class="fas fa-shoe-prints"></i>
+                                Footer Yönetimi
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link" data-section="navbar">
+                                <i class="fas fa-bars"></i>
+                                Navbar Yönetimi
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#settings" class="nav-link" data-section="settings">
+                                <i class="fas fa-cog"></i>
+                                <span>Genel Ayarlar</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                <div class="sidebar-footer">
+                    <button id="logoutBtn" class="btn btn-secondary">
+                        <i class="fas fa-sign-out-alt"></i> Çıkış Yap
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Top Bar -->
+                <header class="top-bar">
+                    <div class="top-bar-left">
+                        <button id="sidebarToggle" class="sidebar-toggle">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h1 id="pageTitle">Dashboard</h1>
+                    </div>
+                    <div class="top-bar-right">
+                        <div class="user-info">
+                            <span id="userName">Admin</span>
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Content Area -->
+                <div class="content-area">
+                    <!-- Dashboard Section -->
+                    <section id="dashboardSection" class="content-section active">
+                        <div class="dashboard-stats">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-truck"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="servicesCount">0</h3>
+                                    <p>Aktif Hizmet</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="contactsCount">0</h3>
+                                    <p>Yeni Mesaj</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-eye"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="pageViews">0</h3>
+                                    <p>Sayfa Görüntüleme</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-images"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="mediaCount">0</h3>
+                                    <p>Medya Dosyası</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-widgets">
+                            <div class="widget">
+                                <h3>Son İletişim Mesajları</h3>
+                                <div id="recentContacts" class="widget-content">
+                                    <p>Yükleniyor...</p>
+                                </div>
+                            </div>
+                            <div class="widget">
+                                <h3>Hızlı İşlemler</h3>
+                                <div class="widget-content">
+                                    <button class="btn btn-primary" data-action="show-services">
+                                        <i class="fas fa-plus"></i> Yeni Hizmet Ekle
+                                    </button>
+                                    <button class="btn btn-secondary" data-action="show-media">
+                                        <i class="fas fa-upload"></i> Medya Yükle
+                                    </button>
+                                    <button class="btn btn-secondary" data-action="show-theme">
+                                        <i class="fas fa-palette"></i> Tema Düzenle
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Services Section -->
+                    <section id="servicesSection" class="content-section">
+                        <div class="section-header">
+                            <h2>Hizmet Yönetimi</h2>
+                            <button class="btn btn-primary" data-action="open-service-modal">
+                                <i class="fas fa-plus"></i> Yeni Hizmet Ekle
+                            </button>
+                        </div>
+                        <div id="servicesList" class="services-list">
+                            <p>Yükleniyor...</p>
+                        </div>
+                    </section>
+
+                    <!-- Pages Section -->
+                    <section id="pagesSection" class="content-section">
+                        <div class="section-header">
+                            <h2>Sayfa İçerikleri</h2>
+                        </div>
+                        <div class="pages-grid">
+                            <div class="page-card" data-page-type="home">
+                                <i class="fas fa-home"></i>
+                                <h3>Ana Sayfa</h3>
+                                <p>Ana sayfa içeriklerini düzenle</p>
+                            </div>
+                            <div class="page-card" data-page-type="about">
+                                <i class="fas fa-info-circle"></i>
+                                <h3>Hakkımızda</h3>
+                                <p>Hakkımızda sayfası içeriklerini düzenle</p>
+                            </div>
+                            <div class="page-card" data-page-type="contact">
+                                <i class="fas fa-address-book"></i>
+                                <h3>İletişim</h3>
+                                <p>İletişim bilgilerini düzenle</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Theme Section -->
+                    <section id="themeSection" class="content-section">
+                        <div class="section-header">
+                            <h2>Tema Ayarları</h2>
+                        </div>
+                        <form id="themeForm" class="theme-form">
+                            <div class="form-group">
+                                <label>Ana Renk</label>
+                                <input type="color" id="primaryColor" name="primaryColor" value="#3b82f6">
+                            </div>
+                            <div class="form-group">
+                                <label>Koyu Ana Renk</label>
+                                <input type="color" id="primaryDark" name="primaryDark" value="#2563eb">
+                            </div>
+                            <div class="form-group">
+                                <label>Arka Plan Rengi</label>
+                                <input type="color" id="backgroundColor" name="backgroundColor" value="#ffffff">
+                            </div>
+                            <div class="form-group">
+                                <label>Yazı Tipi</label>
+                                <select id="fontFamily" name="fontFamily">
+                                    <option value="Inter">Inter</option>
+                                    <option value="Roboto">Roboto</option>
+                                    <option value="Open Sans">Open Sans</option>
+                                    <option value="Poppins">Poppins</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Tema Kaydet
+                            </button>
+                        </form>
+                    </section>
+
+                    <!-- Media Section -->
+                    <section id="mediaSection" class="content-section">
+                        <div class="section-header">
+                            <h2>Medya Yönetimi</h2>
+                        </div>
+                        
+                        <!-- Görsel Yükleme Formu -->
+                        <div class="media-upload-section">
+                            <h3>Görsel Yükle</h3>
+                            <form id="media-upload-form" class="media-form">
+                                <div class="form-group">
+                                    <label for="media-target">Hangi alan için?</label>
+                                    <select id="media-target" name="media-target" required>
+                                        <option value="">Alan seçin...</option>
+                                        <option value="navbar_logo">Navbar Logo</option>
+                                        <option value="homepage_hero_bg">Anasayfa Arkaplanı</option>
+                                        <option value="service_mobilvinchizmeti_img">Mobil Vinç Hizmeti</option>
+                                        <option value="service_insaatkurulumu_img">İnşaat Kurulum Hizmeti</option>
+                                        <option value="service_petrolkuyuhizmeti_img">Petrol Kuyusu Hizmeti</option>
+                                        <option value="service_petrolinsaatsahasi_img">Petrol ve İnşaat Sahası Hizmeti</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="media-file">Görsel Seç</label>
+                                    <input type="file" id="media-file" name="media-file" accept="image/*" required />
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-upload"></i> Yükle
+                                </button>
+                            </form>
+                            <div id="media-upload-preview" class="media-preview"></div>
+                            <div id="media-upload-message" class="message"></div>
+                        </div>
+                        
+                        <!-- Mevcut Görseller -->
+                        <div class="current-media-section">
+                            <h3>Mevcut Görseller</h3>
+                            <div id="current-media-grid" class="current-media-grid">
+                                <p>Yükleniyor...</p>
+                            </div>
+                        </div>
+                        
+                        <div id="mediaGrid" class="media-grid">
+                            <p>Yükleniyor...</p>
+                        </div>
+                    </section>
+
+                    <!-- Contacts Section -->
+                    <section id="contactsSection" class="content-section">
+                        <div class="section-header">
+                            <h2>İletişim Mesajları</h2>
+                        </div>
+                        <div id="contactsList" class="contacts-list">
+                            <p>Yükleniyor...</p>
+                        </div>
+                    </section>
+
+                    <!-- Footer Yönetimi -->
+                    <div id="footerSection" class="content-section">
+                        <div class="section-header">
+                            <h2><i class="fas fa-shoe-prints"></i> Footer Yönetimi</h2>
+                            <p>Web sitesinin alt kısmındaki footer bölümünü yönetin</p>
+                        </div>
+                        
+                        <div class="footer-management">
+                            <div class="footer-form-container">
+                                <form id="footerForm" class="footer-form">
+                                    <div class="form-section">
+                                        <h3>Şirket Bilgileri</h3>
+                                        <div class="form-group">
+                                            <label for="footerCompanyName">Şirket Adı</label>
+                                            <input type="text" id="footerCompanyName" name="footer_company_name" placeholder="Bismil Vinç">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="footerDescription">Şirket Açıklaması</label>
+                                            <textarea id="footerDescription" name="footer_description" rows="3" placeholder="Şirket hakkında kısa açıklama..."></textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-section">
+                                        <h3>İletişim Bilgileri</h3>
+                                        <div class="form-group">
+                                            <label for="footerPhone">Telefon Numarası</label>
+                                            <input type="tel" id="footerPhone" name="footer_phone" placeholder="0532 667 78 52">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="footerPhone2">İkinci Telefon Numarası</label>
+                                            <input type="tel" id="footerPhone2" name="footer_phone2" placeholder="0555 123 45 67">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="footerWhatsApp">WhatsApp Numarası</label>
+                                            <input type="tel" id="footerWhatsApp" name="footer_whatsapp" placeholder="0555 123 45 67">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="footerEmail">E-posta Adresi</label>
+                                            <input type="email" id="footerEmail" name="footer_email" placeholder="info@bismilvinc.com">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="footerAddress">Adres</label>
+                                            <input type="text" id="footerAddress" name="footer_address" placeholder="Bismil, Diyarbakır">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="footerWorkingHours">Çalışma Saatleri</label>
+                                            <input type="text" id="footerWorkingHours" name="footer_working_hours" placeholder="7/24 Hizmet">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-section">
+                                        <h3>Hızlı Linkler</h3>
+                                        <div class="form-group">
+                                            <label for="footerHomeLink">Ana Sayfa Link Metni</label>
+                                            <input type="text" id="footerHomeLink" name="footer_home_link" placeholder="Ana Sayfa">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="footerServicesLink">Hizmetler Link Metni</label>
+                                            <input type="text" id="footerServicesLink" name="footer_services_link" placeholder="Hizmetler">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="footerAboutLink">Hakkımızda Link Metni</label>
+                                            <input type="text" id="footerAboutLink" name="footer_about_link" placeholder="Hakkımızda">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="footerContactLink">İletişim Link Metni</label>
+                                            <input type="text" id="footerContactLink" name="footer_contact_link" placeholder="İletişim">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-section">
+                                        <h3>Hizmetler Listesi</h3>
+                                        <div class="form-group">
+                                            <label for="footerService1">Hizmet 1</label>
+                                            <input type="text" id="footerService1" name="footer_service1" placeholder="Mobil Vinç Kiralama">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="footerService2">Hizmet 2</label>
+                                            <input type="text" id="footerService2" name="footer_service2" placeholder="Platform Lift Kiralama">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="footerService3">Hizmet 3</label>
+                                            <input type="text" id="footerService3" name="footer_service3" placeholder="İnşaat Kurulum Hizmetleri">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="footerService4">Hizmet 4</label>
+                                            <input type="text" id="footerService4" name="footer_service4" placeholder="Petrol Kuyusu Hizmetleri">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="footerService5">Hizmet 5</label>
+                                            <input type="text" id="footerService5" name="footer_service5" placeholder="Petrol ve İnşaat Sahası">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-section">
+                                        <h3>Copyright</h3>
+                                        <div class="form-group">
+                                            <label for="footerCopyright">Copyright Metni</label>
+                                            <input type="text" id="footerCopyright" name="footer_copyright" placeholder="© 2024 Bismil Vinç. Tüm hakları saklıdır.">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i>
+                                            Footer'ı Kaydet
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="footer-preview">
+                                <h3>Footer Önizleme</h3>
+                                <div class="preview-container">
+                                    <div class="footer-preview-content">
+                                        <!-- Footer önizleme burada dinamik olarak gösterilecek -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navbar Yönetimi -->
+                    <section id="navbarSection" class="content-section">
+                        <div class="section-header">
+                            <h2><i class="fas fa-bars"></i> Navbar Yönetimi</h2>
+                            <p>Web sitesinin üst kısmındaki navigasyon menüsünü yönetin</p>
+                        </div>
+                        
+                        <div class="navbar-management">
+                            <div class="navbar-form-container">
+                                <form id="navbarForm" class="navbar-form">
+                                    <div class="form-section">
+                                        <h3>Şirket Bilgileri</h3>
+                                        <div class="form-group">
+                                            <label for="navbarCompanyName">Şirket Adı</label>
+                                            <input type="text" id="navbarCompanyName" name="navbar_company_name" placeholder="Bismil Vinç">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-section">
+                                        <h3>Menü Linkleri</h3>
+                                        <div class="form-group">
+                                            <label for="navbarHomeLink">Ana Sayfa Linki</label>
+                                            <input type="text" id="navbarHomeLink" name="navbar_home_link" placeholder="Ana Sayfa">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="navbarServicesLink">Hizmetler Linki</label>
+                                            <input type="text" id="navbarServicesLink" name="navbar_services_link" placeholder="Hizmetler">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="navbarAboutLink">Hakkımızda Linki</label>
+                                            <input type="text" id="navbarAboutLink" name="navbar_about_link" placeholder="Hakkımızda">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="navbarContactLink">İletişim Linki</label>
+                                            <input type="text" id="navbarContactLink" name="navbar_contact_link" placeholder="İletişim">
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Navbar Ayarlarını Kaydet
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <div class="navbar-preview-container">
+                                <h3>Önizleme</h3>
+                                <div class="navbar-preview">
+                                    <div class="preview-navbar">
+                                        <div class="preview-logo">
+                                            <img id="preview-logo" src="" alt="Logo" style="display: none;">
+                                            <h2 id="preview-company-name">Bismil Vinç</h2>
+                                        </div>
+                                        <ul class="preview-menu">
+                                            <li><a href="#" id="preview-home-link">Ana Sayfa</a></li>
+                                            <li><a href="#" id="preview-services-link">Hizmetler</a></li>
+                                            <li><a href="#" id="preview-about-link">Hakkımızda</a></li>
+                                            <li><a href="#" id="preview-contact-link">İletişim</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Settings Section -->
+                    <section id="settingsSection" class="content-section">
+                        <div class="section-header">
+                            <h2>Genel Ayarlar</h2>
+                        </div>
+                        <form id="settingsForm" class="settings-form">
+                            <div class="form-group">
+                                <label>Site Başlığı</label>
+                                <input type="text" id="siteTitle" name="siteTitle" value="Bismil Vinç">
+                            </div>
+                            <div class="form-group">
+                                <label>Site Açıklaması</label>
+                                <textarea id="siteDescription" name="siteDescription" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Telefon Numarası</label>
+                                <input type="tel" id="phoneNumber" name="phoneNumber" value="0555 123 45 67">
+                            </div>
+                            <div class="form-group">
+                                <label>WhatsApp Numarası</label>
+                                <input type="tel" id="whatsappNumber" name="whatsappNumber" value="0555 123 45 67">
+                            </div>
+                            <div class="form-group">
+                                <label>E-posta Adresi</label>
+                                <input type="email" id="emailAddress" name="emailAddress" value="info@bismilvinc.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Adres</label>
+                                <textarea id="address" name="address" rows="2">Bismil, Diyarbakır</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Çalışma Saatleri</label>
+                                <input type="text" id="workingHours" name="workingHours" value="7/24 Hizmet">
+                            </div>
+                            <div class="form-group">
+                                <label>Google Maps Koordinatları (Latitude)</label>
+                                <input type="text" id="mapLatitude" name="mapLatitude" value="37.842249">
+                            </div>
+                            <div class="form-group">
+                                <label>Google Maps Koordinatları (Longitude)</label>
+                                <input type="text" id="mapLongitude" name="mapLongitude" value="40.669449">
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Ayarları Kaydet
+                            </button>
+                        </form>
+                    </section>
+                </div>
+            </main>
+        </div>
+
+        <!-- Modals -->
+        <div id="serviceModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="serviceModalTitle">Yeni Hizmet Ekle</h3>
+                    <button class="modal-close" data-action="close-service-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="serviceForm" class="service-form">
+                    <div class="form-group">
+                        <label>Hizmet Adı</label>
+                        <input type="text" id="serviceName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>URL Slug</label>
+                        <input type="text" id="serviceSlug" name="slug" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <textarea id="serviceDescription" name="description" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>İkon (Font Awesome)</label>
+                        <input type="text" id="serviceIcon" name="icon" placeholder="fas fa-truck">
+                    </div>
+                    <div class="form-group">
+                        <label>Görsel</label>
+                        <input type="file" id="serviceImage" name="image" accept="image/*">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" data-action="close-service-modal">İptal</button>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sayfa Düzenleme Modal -->
+        <div id="pageEditModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="pageEditModalTitle">Sayfa İçerikleri</h3>
+                    <button class="modal-close" data-action="close-page-edit-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="pageEditForm" class="page-edit-form">
+                    <!-- Form alanları dinamik olarak doldurulacak -->
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" data-action="close-page-edit-modal">İptal</button>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="mediaUploadModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Medya Yükle</h3>
+                    <button class="modal-close" data-action="close-media-upload-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="mediaUploadForm" class="media-upload-form">
+                    <div class="form-group">
+                        <label>Dosya Seç</label>
+                        <input type="file" id="mediaFile" name="file" accept="image/*,video/*" multiple>
+                    </div>
+                    <div class="form-group">
+                        <label>Klasör</label>
+                        <input type="text" id="mediaFolder" name="folder" placeholder="bismilvinc">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" data-action="close-media-upload-modal">İptal</button>
+                        <button type="submit" class="btn btn-primary">Yükle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html> 

@@ -1,0 +1,91 @@
+{
+  "version": 2,
+  "name": "bismil-vinc",
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/ANASYFA",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/admin",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/mobilvinchizmeti",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/insaatkurulumu",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/petrolkuyuhizmeti",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/petrolinsaatsahasi",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/mobil-vinc-kiralama",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/insaat-kurulum-hizmetleri",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/petrol-kuyusu-vinc-hizmetleri",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/petrol-insaat-sahasi-kurulum",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "functions": {
+    "server.js": {
+      "maxDuration": 30
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ]
+} 
