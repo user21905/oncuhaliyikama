@@ -24,6 +24,10 @@
       "dest": "/footer.js"
     },
     {
+      "src": "/favicon.ico",
+      "dest": "/favicon.ico"
+    },
+    {
       "src": "/admin/(.*)",
       "dest": "/admin/$1"
     },

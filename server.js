@@ -66,25 +66,65 @@ app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static dosyalar - Sadece gerekli dosyalar
+// Static dosyalar - Hata yakalama ile
 app.get('/styles.css', (req, res) => {
-    res.setHeader('Content-Type', 'text/css');
-    res.sendFile(path.join(__dirname, 'styles.css'));
+    try {
+        console.log('CSS dosyası isteği alındı');
+        res.setHeader('Content-Type', 'text/css');
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+        res.sendFile(path.join(__dirname, 'styles.css'));
+    } catch (error) {
+        console.error('CSS dosyası hatası:', error);
+        res.status(500).send('CSS dosyası yüklenemedi');
+    }
 });
 
 app.get('/script.js', (req, res) => {
-    res.setHeader('Content-Type', 'application/javascript');
-    res.sendFile(path.join(__dirname, 'script.js'));
+    try {
+        console.log('Script dosyası isteği alındı');
+        res.setHeader('Content-Type', 'application/javascript');
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+        res.sendFile(path.join(__dirname, 'script.js'));
+    } catch (error) {
+        console.error('Script dosyası hatası:', error);
+        res.status(500).send('Script dosyası yüklenemedi');
+    }
 });
 
 app.get('/navbar.js', (req, res) => {
-    res.setHeader('Content-Type', 'application/javascript');
-    res.sendFile(path.join(__dirname, 'navbar.js'));
+    try {
+        console.log('Navbar dosyası isteği alındı');
+        res.setHeader('Content-Type', 'application/javascript');
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+        res.sendFile(path.join(__dirname, 'navbar.js'));
+    } catch (error) {
+        console.error('Navbar dosyası hatası:', error);
+        res.status(500).send('Navbar dosyası yüklenemedi');
+    }
 });
 
 app.get('/footer.js', (req, res) => {
-    res.setHeader('Content-Type', 'application/javascript');
-    res.sendFile(path.join(__dirname, 'footer.js'));
+    try {
+        console.log('Footer dosyası isteği alındı');
+        res.setHeader('Content-Type', 'application/javascript');
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+        res.sendFile(path.join(__dirname, 'footer.js'));
+    } catch (error) {
+        console.error('Footer dosyası hatası:', error);
+        res.status(500).send('Footer dosyası yüklenemedi');
+    }
+});
+
+app.get('/favicon.ico', (req, res) => {
+    try {
+        console.log('Favicon isteği alındı');
+        res.setHeader('Content-Type', 'image/x-icon');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.sendFile(path.join(__dirname, 'favicon.ico'));
+    } catch (error) {
+        console.error('Favicon hatası:', error);
+        res.status(404).send('Favicon bulunamadı');
+    }
 });
 
 // Admin klasörü için özel static servis
