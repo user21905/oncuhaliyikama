@@ -104,7 +104,22 @@ const authenticateAdmin = async (req, res, next) => {
 
 // Ana sayfa
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    try {
+        console.log('Ana sayfa isteği alındı');
+        res.sendFile(path.join(__dirname, 'index.html'));
+    } catch (error) {
+        console.error('Ana sayfa hatası:', error);
+        res.status(500).send(`
+            <html>
+                <head><title>Bismil Vinç</title></head>
+                <body>
+                    <h1>Bismil Vinç</h1>
+                    <p>Site yükleniyor...</p>
+                    <p>Hata: ${error.message}</p>
+                </body>
+            </html>
+        `);
+    }
 });
 
 // Anasayfa için alternatif URL
@@ -916,29 +931,47 @@ app.use((error, req, res, next) => {
 // Server başlatma
 const startServer = async () => {
     try {
-        // Database bağlantısı
-        await databaseConnection.connect();
-        console.log('✅ MongoDB bağlantısı başarılı');
+        // Database bağlantısı - hata durumunda devam et
+        try {
+            await databaseConnection.connect();
+            console.log('✅ MongoDB bağlantısı başarılı');
+        } catch (dbError) {
+            console.warn('⚠️ MongoDB bağlantısı başarısız, devam ediliyor:', dbError.message);
+        }
 
-        // Varsayılan ayarları yükle
-        const settingsRepo = new SettingsRepository();
-        await settingsRepo.initializeSettings();
-        console.log('✅ Varsayılan ayarlar yüklendi');
+        // Varsayılan ayarları yükle - hata durumunda devam et
+        try {
+            const settingsRepo = new SettingsRepository();
+            await settingsRepo.initializeSettings();
+            console.log('✅ Varsayılan ayarlar yüklendi');
+        } catch (settingsError) {
+            console.warn('⚠️ Ayarlar yüklenemedi, devam ediliyor:', settingsError.message);
+        }
 
-        // Varsayılan admin kullanıcısını oluştur
-        const userRepo = new UserRepository();
-        await userRepo.initializeDefaultAdmin();
-        console.log('✅ Varsayılan admin kullanıcısı oluşturuldu');
+        // Varsayılan admin kullanıcısını oluştur - hata durumunda devam et
+        try {
+            const userRepo = new UserRepository();
+            await userRepo.initializeDefaultAdmin();
+            console.log('✅ Varsayılan admin kullanıcısı oluşturuldu');
+        } catch (userError) {
+            console.warn('⚠️ Admin kullanıcısı oluşturulamadı, devam ediliyor:', userError.message);
+        }
 
-        // Varsayılan hizmetleri oluştur
-        const serviceRepo = new ServiceRepository();
-        await serviceRepo.initializeDefaultServices();
-        console.log('✅ Varsayılan hizmetler oluşturuldu');
+        // Varsayılan hizmetleri oluştur - hata durumunda devam et
+        try {
+            const serviceRepo = new ServiceRepository();
+            await serviceRepo.initializeDefaultServices();
+            console.log('✅ Varsayılan hizmetler oluşturuldu');
+        } catch (serviceError) {
+            console.warn('⚠️ Hizmetler oluşturulamadı, devam ediliyor:', serviceError.message);
+        }
 
         console.log(`🚀 Server hazır`);
         console.log(`📱 Environment: ${process.env.NODE_ENV}`);
     } catch (error) {
         console.error('❌ Server başlatma hatası:', error);
+        // Hata durumunda bile devam et
+        console.log('🔄 Server hata ile devam ediyor...');
     }
 };
 
