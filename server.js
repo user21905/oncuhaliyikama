@@ -222,19 +222,67 @@ app.get('/petrol-insaat-sahasi-kurulum', (req, res) => {
 // Settings API
 app.get('/api/settings', async (req, res) => {
     try {
+        console.log('API settings isteği alındı');
+        
+        // MongoDB bağlantısını kontrol et
+        if (!databaseConnection.isConnected()) {
+            console.log('MongoDB bağlantısı yok, fallback değerler döndürülüyor');
+            return res.json({
+                success: true,
+                data: {
+                    // Navbar ayarları
+                    navbar_logo: '',
+                    navbar_company_name: 'Bismil Vinç',
+                    navbar_home_link: 'Ana Sayfa',
+                    navbar_services_link: 'Hizmetler',
+                    navbar_about_link: 'Hakkımızda',
+                    navbar_contact_link: 'İletişim',
+                    
+                    // Footer ayarları
+                    footer_company_name: 'Bismil Vinç',
+                    footer_description: 'Diyarbakır\'da profesyonel mobil vinç ve kurulum hizmetleri',
+                    footer_phone: '0555 123 45 67',
+                    footer_whatsapp: '0555 123 45 67',
+                    footer_email: 'info@bismilvinc.com',
+                    footer_address: 'Bismil, Diyarbakır',
+                    footer_working_hours: '7/24 Hizmet',
+                    
+                    // Hizmet resimleri
+                    service_mobilvinchizmeti_img: '',
+                    service_insaatkurulumu_img: '',
+                    service_petrolkuyuhizmeti_img: '',
+                    service_petrolinsaatsahasi_img: '',
+                    
+                    // İletişim bilgileri
+                    contact_phone: '0555 123 45 67',
+                    contact_whatsapp: '0555 123 45 67',
+                    contact_email: 'info@bismilvinc.com',
+                    contact_address: 'Bismil, Diyarbakır'
+                }
+            });
+        }
+        
         const settingsRepo = new SettingsRepository();
         const settings = await settingsRepo.getPublicSettingsAsObject();
         
+        console.log('Settings başarıyla getirildi');
         res.json({
             success: true,
             data: settings
         });
     } catch (error) {
         console.error('Settings getirme hatası:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Ayarlar getirilemedi',
-            error: error.message
+        
+        // Hata durumunda fallback değerler döndür
+        res.json({
+            success: true,
+            data: {
+                navbar_company_name: 'Bismil Vinç',
+                footer_company_name: 'Bismil Vinç',
+                footer_phone: '0555 123 45 67',
+                footer_email: 'info@bismilvinc.com',
+                footer_address: 'Bismil, Diyarbakır'
+            }
         });
     }
 });
