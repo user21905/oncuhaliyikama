@@ -8,54 +8,6 @@
   ],
   "routes": [
     {
-      "src": "/styles.css",
-      "dest": "/styles.css"
-    },
-    {
-      "src": "/script.js",
-      "dest": "/script.js"
-    },
-    {
-      "src": "/navbar.js",
-      "dest": "/navbar.js"
-    },
-    {
-      "src": "/footer.js",
-      "dest": "/footer.js"
-    },
-    {
-      "src": "/favicon.ico",
-      "dest": "/favicon.ico"
-    },
-    {
-      "src": "/admin/(.*)",
-      "dest": "/admin/$1"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/admin",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/mobilvinchizmeti",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/insaatkurulumu",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/petrolkuyuhizmeti",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/petrolinsaatsahasi",
-      "dest": "/server.js"
-    },
-    {
       "src": "/(.*)",
       "dest": "/server.js"
     }
