@@ -230,6 +230,8 @@ class AdminPanel {
 
     async validateToken() {
         console.log('=== VALIDATE TOKEN BAŞLADI ===');
+        console.log('Token değeri:', this.token);
+        console.log('Token uzunluğu:', this.token ? this.token.length : 0);
         
         // Validation'ın devam ettiğini işaretle
         this.validationInProgress = true;
