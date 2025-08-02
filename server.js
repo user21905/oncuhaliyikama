@@ -606,6 +606,31 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
+// Cloudinary environment variables test endpoint
+app.get('/api/test/cloudinary-env', (req, res) => {
+    const cloudinaryVars = {
+        CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME ? 'VAR' : 'YOK',
+        CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY ? 'VAR' : 'YOK',
+        CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET ? 'VAR' : 'YOK'
+    };
+    
+    const hasAllVars = Object.values(cloudinaryVars).every(v => v === 'VAR');
+    const hasPlaceholders = Object.values(cloudinaryVars).some(v => 
+        process.env.CLOUDINARY_CLOUD_NAME === 'your_cloud_name' ||
+        process.env.CLOUDINARY_API_KEY === 'your_api_key' ||
+        process.env.CLOUDINARY_API_SECRET === 'your_api_secret'
+    );
+    
+    res.json({
+        success: hasAllVars && !hasPlaceholders,
+        cloudinary_vars: cloudinaryVars,
+        has_placeholders: hasPlaceholders,
+        message: hasAllVars && !hasPlaceholders ? 
+            'Cloudinary environment variables doğru' : 
+            'Cloudinary environment variables eksik veya placeholder'
+    });
+});
+
 // Admin API Routes
 
 // Admin Login
