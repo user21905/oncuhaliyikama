@@ -449,6 +449,15 @@ app.post('/api/admin/media/upload', authenticateAdmin, async (req, res) => {
         try {
             cloudinaryService = require('./services/cloudinary');
             console.log('✅ Cloudinary servisi başarıyla yüklendi');
+            
+            // Service'in kullanılabilir olup olmadığını kontrol et
+            if (!cloudinaryService.isServiceAvailable()) {
+                console.error('❌ Cloudinary servisi kullanılamıyor');
+                return res.status(500).json({
+                    success: false,
+                    message: cloudinaryService.initError ? cloudinaryService.initError.message : 'Cloudinary servisi kullanılamıyor'
+                });
+            }
         } catch (cloudinaryError) {
             console.error('❌ Cloudinary servisi yüklenemedi:', cloudinaryError.message);
             return res.status(500).json({

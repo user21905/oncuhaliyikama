@@ -4,8 +4,19 @@ require('dotenv').config();
 class CloudinaryService {
     constructor() {
         console.log('=== CLOUDINARY SERVICE BAŞLATILIYOR ===');
-        this.validateEnvironmentVariables();
-        this.configureCloudinary();
+        this.isConfigured = false;
+        this.initError = null;
+        
+        try {
+            this.validateEnvironmentVariables();
+            this.configureCloudinary();
+            this.isConfigured = true;
+            console.log('✅ CloudinaryService başarıyla başlatıldı');
+        } catch (error) {
+            this.initError = error;
+            console.error('❌ CloudinaryService başlatılamadı:', error.message);
+            // Service'i kullanılabilir hale getir ama hata durumunu sakla
+        }
     }
 
     /**
@@ -67,6 +78,13 @@ class CloudinaryService {
     }
 
     /**
+     * Service'in kullanılabilir olup olmadığını kontrol et
+     */
+    isServiceAvailable() {
+        return this.isConfigured && !this.initError;
+    }
+
+    /**
      * Dosya yükleme
      * @param {Buffer|string} file - Yüklenecek dosya (buffer veya base64)
      * @param {Object} options - Yükleme seçenekleri
@@ -75,12 +93,15 @@ class CloudinaryService {
     async uploadFile(file, options = {}) {
         try {
             console.log('=== CLOUDINARY UPLOAD BAŞLADI ===');
+            
+            // Service'in kullanılabilir olup olmadığını kontrol et
+            if (!this.isServiceAvailable()) {
+                throw new Error(this.initError ? this.initError.message : 'Cloudinary servisi kullanılamıyor');
+            }
+            
             console.log('File type:', typeof file);
             console.log('File length:', file.length);
             console.log('Options:', options);
-            
-            // Environment variables'ları tekrar kontrol et
-            this.validateEnvironmentVariables();
             
             const {
                 folder = 'bismilvinc',
@@ -153,7 +174,7 @@ class CloudinaryService {
             
             // Daha detaylı hata mesajları
             let errorMessage = error.message;
-            if (error.message.includes('Invalid API key')) {
+            if (error.message.includes('Invalid API key') || error.message.includes('Unknown API key')) {
                 errorMessage = 'Geçersiz Cloudinary API anahtarı. Lütfen Vercel\'de CLOUDINARY_API_KEY değişkenini kontrol edin.';
             } else if (error.message.includes('Invalid signature')) {
                 errorMessage = 'Geçersiz Cloudinary imzası. Lütfen CLOUDINARY_API_SECRET değişkenini kontrol edin.';
@@ -200,7 +221,7 @@ class CloudinaryService {
             
             // Daha detaylı hata mesajları
             let errorMessage = error.message;
-            if (error.message.includes('Invalid API key')) {
+            if (error.message.includes('Invalid API key') || error.message.includes('Unknown API key')) {
                 errorMessage = 'Geçersiz Cloudinary API anahtarı. Lütfen Vercel\'de CLOUDINARY_API_KEY değişkenini kontrol edin.';
             } else if (error.message.includes('Invalid signature')) {
                 errorMessage = 'Geçersiz Cloudinary imzası. Lütfen CLOUDINARY_API_SECRET değişkenini kontrol edin.';
