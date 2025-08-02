@@ -32,6 +32,18 @@ class CloudinaryService {
             console.log('File length:', file.length);
             console.log('Options:', options);
             
+            // Cloudinary credentials kontrolü
+            if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+                throw new Error('Cloudinary credentials eksik');
+            }
+            
+            // Placeholder credentials kontrolü
+            if (process.env.CLOUDINARY_CLOUD_NAME === 'your_cloud_name' || 
+                process.env.CLOUDINARY_API_KEY === 'your_api_key' || 
+                process.env.CLOUDINARY_API_SECRET === 'your_api_secret') {
+                throw new Error('Cloudinary credentials placeholder değerler');
+            }
+            
             const {
                 folder = 'bismilvinc',
                 public_id = null,
@@ -101,9 +113,21 @@ class CloudinaryService {
             console.error('Cloudinary yükleme hatası:', error);
             console.error('Error stack:', error.stack);
             
+            // Daha detaylı hata mesajları
+            let errorMessage = error.message;
+            if (error.message.includes('Invalid API key')) {
+                errorMessage = 'Geçersiz Cloudinary API anahtarı';
+            } else if (error.message.includes('Invalid signature')) {
+                errorMessage = 'Geçersiz Cloudinary imzası';
+            } else if (error.message.includes('Resource not found')) {
+                errorMessage = 'Cloudinary kaynağı bulunamadı';
+            } else if (error.message.includes('credentials')) {
+                errorMessage = 'Cloudinary ayarları eksik veya hatalı';
+            }
+            
             return {
                 success: false,
-                error: error.message
+                error: errorMessage
             };
         }
     }
@@ -134,9 +158,21 @@ class CloudinaryService {
             console.error('Base64 yükleme hatası:', error);
             console.error('Error stack:', error.stack);
             
+            // Daha detaylı hata mesajları
+            let errorMessage = error.message;
+            if (error.message.includes('Invalid API key')) {
+                errorMessage = 'Geçersiz Cloudinary API anahtarı';
+            } else if (error.message.includes('Invalid signature')) {
+                errorMessage = 'Geçersiz Cloudinary imzası';
+            } else if (error.message.includes('Resource not found')) {
+                errorMessage = 'Cloudinary kaynağı bulunamadı';
+            } else if (error.message.includes('credentials')) {
+                errorMessage = 'Cloudinary ayarları eksik veya hatalı';
+            }
+            
             return {
                 success: false,
-                error: error.message
+                error: errorMessage
             };
         }
     }

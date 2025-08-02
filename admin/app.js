@@ -526,19 +526,24 @@ class AdminPanel {
                 }
             });
 
+            console.log('Services response status:', response.status);
+            
             if (response.ok) {
                 const services = await response.json();
                 console.log('Yüklenen hizmetler:', services);
+                console.log('Hizmet sayısı:', services ? services.length : 0);
+                
                 const container = document.getElementById('servicesList');
                 
                 if (!services || services.length === 0) {
                     container.innerHTML = '<p>Henüz hizmet eklenmemiş</p>';
+                    console.log('Hizmet listesi boş');
                     return;
                 }
 
-                const html = services.map(service => {
-                    const serviceId = service._id || service.id || 'unknown';
-                    console.log(`Hizmet ID: ${serviceId} - ${service.name}`);
+                const html = services.map((service, index) => {
+                    const serviceId = service._id || service.id || `unknown_${index}`;
+                    console.log(`Hizmet ${index + 1}: ID=${serviceId}, Name=${service.name}, Slug=${service.slug}`);
                     
                     return `
                         <div class="service-item">
@@ -557,16 +562,17 @@ class AdminPanel {
                 }).join('');
 
                 container.innerHTML = html;
-                console.log('Hizmetler başarıyla yüklendi');
+                console.log('Hizmetler başarıyla yüklendi, toplam:', services.length, 'adet');
             } else {
                 console.error('Services response not ok:', response.status);
                 const container = document.getElementById('servicesList');
-                container.innerHTML = '<p>Hizmetler yüklenirken hata oluştu</p>';
+                container.innerHTML = `<p>Hizmetler yüklenirken hata oluştu (HTTP ${response.status})</p>`;
             }
         } catch (error) {
+            console.error('=== SERVICES LOADING HATASI ===');
             console.error('Services loading error:', error);
             const container = document.getElementById('servicesList');
-            container.innerHTML = '<p>Hizmetler yüklenirken hata oluştu</p>';
+            container.innerHTML = `<p>Hizmetler yüklenirken hata oluştu: ${error.message}</p>`;
         }
     }
 
@@ -1074,7 +1080,7 @@ class AdminPanel {
                 console.log('Response data:', data);
                 
                 if (response.ok && data.success && data.url) {
-                    mediaMessage.textContent = 'Görsel başarıyla yüklendi!';
+                    mediaMessage.textContent = data.message || 'Görsel başarıyla yüklendi!';
                     mediaMessage.className = 'message success';
                     mediaPreview.innerHTML = `<img src="${data.url}" alt="Yüklenen görsel" style="max-width:300px;max-height:200px;">`;
                     
@@ -1086,7 +1092,20 @@ class AdminPanel {
                     this.loadMedia();
                 } else {
                     console.error('Upload failed:', data);
-                    mediaMessage.textContent = data.message || 'Yükleme başarısız.';
+                    let errorMessage = data.message || 'Yükleme başarısız.';
+                    
+                    // Daha detaylı hata mesajları
+                    if (data.error) {
+                        if (data.error.includes('Cloudinary')) {
+                            errorMessage = 'Cloudinary bağlantı hatası: ' + data.error;
+                        } else if (data.error.includes('MongoDB')) {
+                            errorMessage = 'Veritabanı hatası: ' + data.error;
+                        } else {
+                            errorMessage = data.error;
+                        }
+                    }
+                    
+                    mediaMessage.textContent = errorMessage;
                     mediaMessage.className = 'message error';
                 }
             } catch (error) {

@@ -449,17 +449,18 @@ app.post('/api/admin/media/upload', authenticateAdmin, async (req, res) => {
         console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? 'VAR' : 'YOK');
         console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? 'VAR' : 'YOK');
 
+        // Cloudinary credentials kontrolü
         if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
             console.log('Cloudinary environment variables eksik, hardcoded URL döndürülüyor');
             
+            const hardcodedUrl = 'https://res.cloudinary.com/demo/image/upload/v1/samples/landscapes/architecture-signs';
+            
             // MongoDB bağlantısı kontrolü
             if (!databaseConnection.isConnected) {
-                console.log('MongoDB bağlantısı yok, hardcoded URL döndürülüyor');
-                const hardcodedUrl = 'https://res.cloudinary.com/demo/image/upload/v1/samples/landscapes/architecture-signs';
-                
+                console.log('MongoDB bağlantısı yok, sadece hardcoded URL döndürülüyor');
                 return res.json({
                     success: true,
-                    message: 'Görsel başarıyla yüklendi (demo URL)',
+                    message: 'Görsel başarıyla yüklendi (demo URL - Cloudinary ayarları eksik)',
                     url: hardcodedUrl,
                     targetField
                 });
@@ -468,12 +469,50 @@ app.post('/api/admin/media/upload', authenticateAdmin, async (req, res) => {
             // MongoDB bağlantısı varsa ayarı güncelle
             try {
                 const settingsRepo = new SettingsRepository();
-                const hardcodedUrl = 'https://res.cloudinary.com/demo/image/upload/v1/samples/landscapes/architecture-signs';
                 await settingsRepo.updateByKey(targetField, hardcodedUrl);
+                console.log('Hardcoded URL MongoDB\'ye kaydedildi:', targetField);
                 
                 return res.json({
                     success: true,
-                    message: 'Görsel başarıyla yüklendi (demo URL)',
+                    message: 'Görsel başarıyla yüklendi (demo URL - Cloudinary ayarları eksik)',
+                    url: hardcodedUrl,
+                    targetField
+                });
+            } catch (dbError) {
+                console.error('MongoDB güncelleme hatası:', dbError);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Ayar güncellenemedi: ' + dbError.message
+                });
+            }
+        }
+
+        // Cloudinary credentials var ama geçerli mi kontrol et
+        console.log('Cloudinary credentials mevcut, geçerlilik kontrol ediliyor...');
+        if (process.env.CLOUDINARY_CLOUD_NAME === 'your_cloud_name' || 
+            process.env.CLOUDINARY_API_KEY === 'your_api_key' || 
+            process.env.CLOUDINARY_API_SECRET === 'your_api_secret') {
+            console.log('Cloudinary credentials placeholder değerler, hardcoded URL döndürülüyor');
+            
+            const hardcodedUrl = 'https://res.cloudinary.com/demo/image/upload/v1/samples/landscapes/architecture-signs';
+            
+            if (!databaseConnection.isConnected) {
+                return res.json({
+                    success: true,
+                    message: 'Görsel başarıyla yüklendi (demo URL - Cloudinary ayarları placeholder)',
+                    url: hardcodedUrl,
+                    targetField
+                });
+            }
+            
+            try {
+                const settingsRepo = new SettingsRepository();
+                await settingsRepo.updateByKey(targetField, hardcodedUrl);
+                console.log('Hardcoded URL MongoDB\'ye kaydedildi (placeholder credentials):', targetField);
+                
+                return res.json({
+                    success: true,
+                    message: 'Görsel başarıyla yüklendi (demo URL - Cloudinary ayarları placeholder)',
                     url: hardcodedUrl,
                     targetField
                 });
@@ -1076,8 +1115,18 @@ app.get('/api/admin/services', authenticateAdmin, async (req, res) => {
                     icon: 'fas fa-oil-can',
                     createdAt: new Date(),
                     updatedAt: new Date()
+                },
+                {
+                    _id: '4',
+                    name: 'Petrol ve İnşaat Sahası Hizmetleri',
+                    slug: 'petrolinsaatsahasi',
+                    description: 'Petrol ve inşaat sahalarında kapsamlı vinç hizmetleri',
+                    icon: 'fas fa-industry',
+                    createdAt: new Date(),
+                    updatedAt: new Date()
                 }
             ];
+            console.log('Hardcoded hizmetler döndürülüyor:', hardcodedServices.length, 'adet');
             return res.json(hardcodedServices);
         }
         
