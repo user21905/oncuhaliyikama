@@ -648,14 +648,34 @@ app.get('/api/test/mongodb', async (req, res) => {
     try {
         const isConnected = databaseConnection.isConnected;
         const mongoUri = process.env.MONGODB_URI ? 'VAR' : 'YOK';
+        const mongoUriPreview = process.env.MONGODB_URI ? 
+            process.env.MONGODB_URI.substring(0, 50) + '...' : 'YOK';
+        
+        // Bağlantıyı tekrar dene
+        let connectionTest = 'BAĞLANTI YOK';
+        let connectionError = null;
+        
+        if (process.env.MONGODB_URI && process.env.MONGODB_URI !== 'your_mongodb_connection_string') {
+            try {
+                await databaseConnection.connect();
+                connectionTest = 'BAĞLI';
+            } catch (connectError) {
+                connectionError = connectError.message;
+                connectionTest = 'BAĞLANTI HATASI';
+            }
+        }
         
         res.json({
             success: isConnected,
-            mongodb_connection: isConnected ? 'BAĞLI' : 'BAĞLANTI YOK',
+            mongodb_connection: connectionTest,
             mongodb_uri: mongoUri,
+            mongodb_uri_preview: mongoUriPreview,
+            connection_error: connectionError,
             message: isConnected ? 
                 'MongoDB bağlantısı aktif' : 
-                'MongoDB bağlantısı yok - MONGODB_URI kontrol edin'
+                connectionError ? 
+                    `MongoDB bağlantı hatası: ${connectionError}` :
+                    'MongoDB bağlantısı yok - MONGODB_URI kontrol edin'
         });
     } catch (error) {
         res.status(500).json({
@@ -1460,6 +1480,8 @@ const startServer = async () => {
         // MongoDB bağlantısını dene
         try {
             if (process.env.MONGODB_URI && process.env.MONGODB_URI !== 'your_mongodb_connection_string') {
+                console.log('🔗 MongoDB bağlantısı deneniyor...');
+                console.log('MONGODB_URI (ilk 50 karakter):', process.env.MONGODB_URI.substring(0, 50) + '...');
                 await databaseConnection.connect();
                 console.log('✅ MongoDB bağlantısı başarılı');
             } else {
@@ -1467,7 +1489,8 @@ const startServer = async () => {
                 console.log('📝 Uygulama MongoDB olmadan çalışacak');
             }
         } catch (dbError) {
-            console.warn('⚠️ MongoDB bağlantısı başarısız:', dbError.message);
+            console.error('❌ MongoDB bağlantısı başarısız:', dbError.message);
+            console.error('❌ MongoDB bağlantı hatası detayı:', dbError);
             console.log('📝 Uygulama MongoDB olmadan çalışmaya devam edecek');
         }
 
