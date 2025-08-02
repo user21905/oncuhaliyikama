@@ -17,8 +17,8 @@ class DatabaseConnection {
             throw new Error('MONGODB_URI environment variable eksik');
         }
 
-        // Placeholder değerleri kontrol et
-        const placeholderPatterns = [
+        // Sadece eski placeholder değerleri kontrol et (yeni MongoDB Atlas'ta olmayan)
+        const oldPlaceholderPatterns = [
             'your_username',
             'your_password', 
             'your_cluster',
@@ -26,15 +26,27 @@ class DatabaseConnection {
             'your_database_name'
         ];
 
-        for (const pattern of placeholderPatterns) {
+        for (const pattern of oldPlaceholderPatterns) {
             if (uri.includes(pattern)) {
-                throw new Error(`MONGODB_URI placeholder değer içeriyor: ${pattern}. Lütfen gerçek MongoDB bilgilerinizi girin.`);
+                throw new Error(`MONGODB_URI eski placeholder değer içeriyor: ${pattern}. Lütfen gerçek MongoDB bilgilerinizi girin.`);
             }
         }
 
         // URI formatını kontrol et
         if (!uri.startsWith('mongodb://') && !uri.startsWith('mongodb+srv://')) {
             throw new Error('MONGODB_URI geçersiz format. mongodb:// veya mongodb+srv:// ile başlamalı.');
+        }
+
+        // MongoDB Atlas formatını kontrol et (daha esnek)
+        if (uri.startsWith('mongodb+srv://')) {
+            // Atlas formatı kontrolü - daha esnek
+            const hasUsername = uri.includes('@') && uri.split('@')[0].includes(':');
+            const hasCluster = uri.includes('.mongodb.net');
+            const hasDatabase = uri.includes('/') && !uri.split('/')[1].includes('?');
+            
+            if (!hasUsername || !hasCluster) {
+                throw new Error('MongoDB Atlas URI formatı eksik. Kullanıcı adı, şifre ve cluster bilgisi gerekli.');
+            }
         }
 
         return true;
