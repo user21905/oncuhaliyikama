@@ -7,11 +7,18 @@ console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? 'VAR' 
 console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? 'VAR' : 'YOK');
 console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? 'VAR' : 'YOK');
 
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-});
+// Placeholder credentials kontrolü
+if (process.env.CLOUDINARY_CLOUD_NAME === 'your_cloud_name' || 
+    process.env.CLOUDINARY_API_KEY === 'your_api_key' || 
+    process.env.CLOUDINARY_API_SECRET === 'your_api_secret') {
+    console.log('Cloudinary credentials placeholder değerler, konfigürasyon atlanıyor');
+} else {
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET
+    });
+}
 
 class CloudinaryService {
     constructor() {
@@ -42,6 +49,11 @@ class CloudinaryService {
                 process.env.CLOUDINARY_API_KEY === 'your_api_key' || 
                 process.env.CLOUDINARY_API_SECRET === 'your_api_secret') {
                 throw new Error('Cloudinary credentials placeholder değerler');
+            }
+            
+            // Cloudinary konfigürasyonu kontrolü
+            if (!cloudinary.config().cloud_name) {
+                throw new Error('Cloudinary konfigürasyonu yapılmamış');
             }
             
             const {

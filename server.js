@@ -525,7 +525,7 @@ app.post('/api/admin/media/upload', authenticateAdmin, async (req, res) => {
             }
         }
 
-        // Cloudinary servisini yükle
+        // Cloudinary servisini yükle (sadece geçerli credentials varsa)
         console.log('Cloudinary servisi yükleniyor...');
         const cloudinaryService = require('./services/cloudinary');
         
