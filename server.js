@@ -1609,15 +1609,22 @@ const startServer = async () => {
 module.exports = app;
 
 // Her ortamda server'ı başlat
-startServer().then(() => {
-    if (process.env.NODE_ENV !== 'production') {
-        app.listen(PORT, () => {
-            console.log(`🚀 Server ${PORT} portunda çalışıyor`);
-            console.log(`🌐 URL: http://localhost:${PORT}`);
-            console.log(`🔧 Admin Panel: http://localhost:${PORT}/admin`);
-        });
+(async () => {
+    try {
+        await startServer();
+        console.log('✅ Server başlatma tamamlandı');
+        
+        if (process.env.NODE_ENV !== 'production') {
+            app.listen(PORT, () => {
+                console.log(`🚀 Server ${PORT} portunda çalışıyor`);
+                console.log(`🌐 URL: http://localhost:${PORT}`);
+                console.log(`🔧 Admin Panel: http://localhost:${PORT}/admin`);
+            });
+        }
+    } catch (error) {
+        console.error('❌ Server başlatma hatası:', error);
     }
-});
+})();
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
