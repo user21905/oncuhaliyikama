@@ -500,11 +500,20 @@ app.post('/api/admin/media/upload', authenticateAdmin, async (req, res) => {
 
         if (result.success && result.data && result.data.url) {
             // İlgili ayarı güncelle
+            console.log('MongoDB bağlantı durumu:', databaseConnection.isConnected);
+            
             if (databaseConnection.isConnected) {
                 try {
                     console.log('Ayar güncelleniyor:', targetField);
                     await settingsRepo.updateByKey(targetField, result.data.url);
                     console.log('Ayar başarıyla güncellendi');
+                    
+                    res.json({
+                        success: true,
+                        message: 'Görsel başarıyla yüklendi ve ayar güncellendi',
+                        url: result.data.url,
+                        targetField
+                    });
                 } catch (updateError) {
                     console.error('Ayar güncelleme hatası:', updateError);
                     // Ayar güncellenemese bile URL'i döndür
@@ -515,14 +524,17 @@ app.post('/api/admin/media/upload', authenticateAdmin, async (req, res) => {
                         targetField
                     });
                 }
+            } else {
+                console.log('MongoDB bağlantısı yok, sadece Cloudinary URL döndürülüyor');
+                // MongoDB bağlantısı yoksa sadece URL'i döndür
+                res.json({
+                    success: true,
+                    message: 'Görsel yüklendi fakat veritabanı bağlantısı yok (URL kaydedilemedi)',
+                    url: result.data.url,
+                    targetField,
+                    warning: 'MongoDB bağlantısı yok'
+                });
             }
-            
-            res.json({
-                success: true,
-                message: 'Görsel başarıyla yüklendi ve ayar güncellendi',
-                url: result.data.url,
-                targetField
-            });
         } else {
             console.error('Cloudinary upload başarısız:', result.error);
             res.status(400).json({
@@ -629,6 +641,29 @@ app.get('/api/test/cloudinary-env', (req, res) => {
             'Cloudinary environment variables doğru' : 
             'Cloudinary environment variables eksik veya placeholder'
     });
+});
+
+// MongoDB connection test endpoint
+app.get('/api/test/mongodb', async (req, res) => {
+    try {
+        const isConnected = databaseConnection.isConnected;
+        const mongoUri = process.env.MONGODB_URI ? 'VAR' : 'YOK';
+        
+        res.json({
+            success: isConnected,
+            mongodb_connection: isConnected ? 'BAĞLI' : 'BAĞLANTI YOK',
+            mongodb_uri: mongoUri,
+            message: isConnected ? 
+                'MongoDB bağlantısı aktif' : 
+                'MongoDB bağlantısı yok - MONGODB_URI kontrol edin'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'MongoDB test hatası'
+        });
+    }
 });
 
 // Admin API Routes
