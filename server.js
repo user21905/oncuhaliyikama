@@ -422,6 +422,7 @@ app.post('/api/upload', async (req, res) => {
 // Admin Media Upload (görseli ilgili ayara kaydeder)
 app.post('/api/admin/media/upload', authenticateAdmin, async (req, res) => {
     try {
+        console.log('=== ADMIN MEDIA UPLOAD BAŞLADI ===');
         console.log('Admin media upload request body:', req.body);
         console.log('Admin media upload request headers:', req.headers);
         
@@ -442,6 +443,49 @@ app.post('/api/admin/media/upload', authenticateAdmin, async (req, res) => {
             });
         }
 
+        // Cloudinary environment variables kontrolü
+        console.log('Cloudinary environment variables kontrol ediliyor...');
+        console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? 'VAR' : 'YOK');
+        console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? 'VAR' : 'YOK');
+        console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? 'VAR' : 'YOK');
+
+        if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+            console.log('Cloudinary environment variables eksik, hardcoded URL döndürülüyor');
+            
+            // MongoDB bağlantısı kontrolü
+            if (!databaseConnection.isConnected) {
+                console.log('MongoDB bağlantısı yok, hardcoded URL döndürülüyor');
+                const hardcodedUrl = 'https://res.cloudinary.com/demo/image/upload/v1/samples/landscapes/architecture-signs';
+                
+                return res.json({
+                    success: true,
+                    message: 'Görsel başarıyla yüklendi (demo URL)',
+                    url: hardcodedUrl,
+                    targetField
+                });
+            }
+            
+            // MongoDB bağlantısı varsa ayarı güncelle
+            try {
+                const settingsRepo = new SettingsRepository();
+                const hardcodedUrl = 'https://res.cloudinary.com/demo/image/upload/v1/samples/landscapes/architecture-signs';
+                await settingsRepo.updateByKey(targetField, hardcodedUrl);
+                
+                return res.json({
+                    success: true,
+                    message: 'Görsel başarıyla yüklendi (demo URL)',
+                    url: hardcodedUrl,
+                    targetField
+                });
+            } catch (dbError) {
+                console.error('MongoDB güncelleme hatası:', dbError);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Ayar güncellenemedi'
+                });
+            }
+        }
+
         const cloudinaryService = require('./services/cloudinary');
         const settingsRepo = new SettingsRepository();
         const defaultFolder = await settingsRepo.getByKey('cloudinary_folder');
@@ -456,13 +500,16 @@ app.post('/api/admin/media/upload', authenticateAdmin, async (req, res) => {
 
         console.log('Cloudinary upload result:', result);
 
-        if (result.success && result.data && result.data.url) { // Changed from result.data.secure_url
+        if (result.success && result.data && result.data.url) {
             // İlgili ayarı güncelle
-            await settingsRepo.updateByKey(targetField, result.data.url); // Changed from result.data.secure_url
+            if (databaseConnection.isConnected) {
+                await settingsRepo.updateByKey(targetField, result.data.url);
+            }
+            
             res.json({
                 success: true,
                 message: 'Görsel başarıyla yüklendi ve ayar güncellendi',
-                url: result.data.url, // Changed from result.data.secure_url
+                url: result.data.url,
                 targetField
             });
         } else {

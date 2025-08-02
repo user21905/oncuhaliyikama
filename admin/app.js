@@ -3,10 +3,13 @@ class AdminPanel {
     constructor() {
         this.currentUser = null;
         this.token = localStorage.getItem('adminToken');
+        this.lastValidationTime = 0;
+        this.validationInProgress = false;
         this.init();
     }
 
     init() {
+        console.log('=== ADMIN PANEL INIT BAŞLADI ===');
         this.setupEventListeners();
         this.checkAuth();
         this.loadDashboardStats();
@@ -199,14 +202,39 @@ class AdminPanel {
     }
 
     checkAuth() {
+        console.log('=== CHECK AUTH ÇAĞRILDI ===');
+        console.log('Token var mı:', !!this.token);
+        console.log('Son validation zamanı:', this.lastValidationTime);
+        console.log('Validation devam ediyor mu:', this.validationInProgress);
+        
         if (this.token) {
+            // Eğer son 5 saniye içinde validation yapıldıysa, tekrar yapma
+            const now = Date.now();
+            if (now - this.lastValidationTime < 5000) {
+                console.log('Validation çok yakın zamanda yapıldı, atlanıyor');
+                return;
+            }
+            
+            // Eğer validation devam ediyorsa, tekrar başlatma
+            if (this.validationInProgress) {
+                console.log('Validation zaten devam ediyor, atlanıyor');
+                return;
+            }
+            
             this.validateToken();
         } else {
+            console.log('Token yok, login ekranı gösteriliyor');
             this.showLogin();
         }
     }
 
     async validateToken() {
+        console.log('=== VALIDATE TOKEN BAŞLADI ===');
+        
+        // Validation'ın devam ettiğini işaretle
+        this.validationInProgress = true;
+        this.lastValidationTime = Date.now();
+        
         try {
             const response = await fetch('/api/admin/validate', {
                 headers: {
@@ -214,16 +242,23 @@ class AdminPanel {
                 }
             });
 
+            console.log('Validation response status:', response.status);
+
             if (response.ok) {
                 const data = await response.json();
                 this.currentUser = data.user;
+                console.log('Validation başarılı, dashboard gösteriliyor');
                 this.showDashboard();
             } else {
+                console.log('Validation başarısız, login ekranı gösteriliyor');
                 this.showLogin();
             }
         } catch (error) {
             console.error('Token validation error:', error);
             this.showLogin();
+        } finally {
+            // Validation'ın bittiğini işaretle
+            this.validationInProgress = false;
         }
     }
 
@@ -471,6 +506,7 @@ class AdminPanel {
 
     async loadServices() {
         try {
+            console.log('=== LOAD SERVICES BAŞLADI ===');
             const response = await fetch('/api/admin/services', {
                 headers: {
                     'Authorization': `Bearer ${this.token}`
@@ -479,32 +515,45 @@ class AdminPanel {
 
             if (response.ok) {
                 const services = await response.json();
+                console.log('Yüklenen hizmetler:', services);
                 const container = document.getElementById('servicesList');
                 
-                if (services.length === 0) {
+                if (!services || services.length === 0) {
                     container.innerHTML = '<p>Henüz hizmet eklenmemiş</p>';
                     return;
                 }
 
-                const html = services.map(service => `
-                    <div class="service-item">
-                        <h3>${service.name}</h3>
-                        <p>${service.description}</p>
-                        <div class="service-actions">
-                            <button class="btn btn-warning btn-sm" data-action="edit-service" data-service-id="${service._id}">
-                                <i class="fas fa-edit"></i> Düzenle
-                            </button>
-                            <button class="btn btn-danger btn-sm" data-action="delete-service" data-service-id="${service._id}">
-                                <i class="fas fa-trash"></i> Sil
-                            </button>
+                const html = services.map(service => {
+                    const serviceId = service._id || service.id || 'unknown';
+                    console.log(`Hizmet ID: ${serviceId} - ${service.name}`);
+                    
+                    return `
+                        <div class="service-item">
+                            <h3>${service.name || 'İsimsiz Hizmet'}</h3>
+                            <p>${service.description || 'Açıklama yok'}</p>
+                            <div class="service-actions">
+                                <button class="btn btn-warning btn-sm" data-action="edit-service" data-service-id="${serviceId}">
+                                    <i class="fas fa-edit"></i> Düzenle
+                                </button>
+                                <button class="btn btn-danger btn-sm" data-action="delete-service" data-service-id="${serviceId}">
+                                    <i class="fas fa-trash"></i> Sil
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
 
                 container.innerHTML = html;
+                console.log('Hizmetler başarıyla yüklendi');
+            } else {
+                console.error('Services response not ok:', response.status);
+                const container = document.getElementById('servicesList');
+                container.innerHTML = '<p>Hizmetler yüklenirken hata oluştu</p>';
             }
         } catch (error) {
             console.error('Services loading error:', error);
+            const container = document.getElementById('servicesList');
+            container.innerHTML = '<p>Hizmetler yüklenirken hata oluştu</p>';
         }
     }
 
