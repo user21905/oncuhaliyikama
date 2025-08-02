@@ -71,9 +71,9 @@ class DatabaseConnection {
                 retryWrites: true,
                 w: 'majority',
                 maxPoolSize: 10,
-                serverSelectionTimeoutMS: 30000,
-                socketTimeoutMS: 45000,
-                connectTimeoutMS: 30000,
+                serverSelectionTimeoutMS: 60000,
+                socketTimeoutMS: 60000,
+                connectTimeoutMS: 60000,
                 heartbeatFrequencyMS: 10000,
                 useUnifiedTopology: true,
                 useNewUrlParser: true,
@@ -111,10 +111,12 @@ class DatabaseConnection {
                 userFriendlyError = 'MongoDB kimlik doğrulama hatası. Kullanıcı adı ve şifreyi kontrol edin.';
             } else if (error.message.includes('ECONNREFUSED')) {
                 userFriendlyError = 'MongoDB sunucusuna bağlanılamıyor. Sunucu çalışıyor mu?';
-            } else if (error.message.includes('ETIMEDOUT')) {
-                userFriendlyError = 'MongoDB bağlantı zaman aşımı. İnternet bağlantınızı kontrol edin.';
+            } else if (error.message.includes('ETIMEDOUT') || error.message.includes('timed out')) {
+                userFriendlyError = 'MongoDB bağlantı zaman aşımı. IP whitelist ve cluster durumunu kontrol edin.';
             } else if (error.message.includes('placeholder')) {
                 userFriendlyError = error.message;
+            } else if (error.message.includes('Server selection timed out')) {
+                userFriendlyError = 'MongoDB sunucu seçimi zaman aşımı. Cluster durumunu ve IP whitelist ayarlarını kontrol edin.';
             }
             
             throw new Error(userFriendlyError);
