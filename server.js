@@ -481,18 +481,40 @@ app.post('/api/admin/media/upload', authenticateAdmin, async (req, res) => {
                 console.error('MongoDB güncelleme hatası:', dbError);
                 return res.status(500).json({
                     success: false,
-                    message: 'Ayar güncellenemedi'
+                    message: 'Ayar güncellenemedi: ' + dbError.message
                 });
             }
         }
 
+        // Cloudinary servisini yükle
+        console.log('Cloudinary servisi yükleniyor...');
         const cloudinaryService = require('./services/cloudinary');
+        
+        // Settings repository'yi yükle
+        console.log('Settings repository yükleniyor...');
         const settingsRepo = new SettingsRepository();
-        const defaultFolder = await settingsRepo.getByKey('cloudinary_folder');
+        
+        // MongoDB bağlantısı kontrolü
+        console.log('MongoDB bağlantı durumu:', databaseConnection.isConnected);
+        if (!databaseConnection.isConnected) {
+            console.log('MongoDB bağlantısı yok, sadece Cloudinary yükleme yapılacak');
+        }
+        
+        // Default folder'ı al
+        let defaultFolder;
+        try {
+            defaultFolder = await settingsRepo.getByKey('cloudinary_folder');
+            console.log('Default folder:', defaultFolder);
+        } catch (folderError) {
+            console.log('Default folder alınamadı, varsayılan kullanılacak:', folderError.message);
+            defaultFolder = null;
+        }
+        
         const uploadFolder = folder || (defaultFolder ? defaultFolder.value : 'bismilvinc');
-
         console.log('Uploading to Cloudinary with folder:', uploadFolder);
 
+        // Cloudinary'ye yükle
+        console.log('Cloudinary upload başlıyor...');
         const result = await cloudinaryService.uploadBase64(base64Data, {
             folder: uploadFolder,
             public_id: fileName ? `${uploadFolder}/${Date.now()}_${fileName}` : undefined
@@ -503,7 +525,20 @@ app.post('/api/admin/media/upload', authenticateAdmin, async (req, res) => {
         if (result.success && result.data && result.data.url) {
             // İlgili ayarı güncelle
             if (databaseConnection.isConnected) {
-                await settingsRepo.updateByKey(targetField, result.data.url);
+                try {
+                    console.log('Ayar güncelleniyor:', targetField);
+                    await settingsRepo.updateByKey(targetField, result.data.url);
+                    console.log('Ayar başarıyla güncellendi');
+                } catch (updateError) {
+                    console.error('Ayar güncelleme hatası:', updateError);
+                    // Ayar güncellenemese bile URL'i döndür
+                    return res.json({
+                        success: true,
+                        message: 'Görsel yüklendi fakat ayar güncellenemedi: ' + updateError.message,
+                        url: result.data.url,
+                        targetField
+                    });
+                }
             }
             
             res.json({
@@ -513,17 +548,31 @@ app.post('/api/admin/media/upload', authenticateAdmin, async (req, res) => {
                 targetField
             });
         } else {
+            console.error('Cloudinary upload başarısız:', result.error);
             res.status(400).json({
                 success: false,
                 message: result.error || 'Yükleme başarısız'
             });
         }
     } catch (error) {
+        console.error('=== ADMIN MEDIA UPLOAD HATASI ===');
         console.error('Admin medya yükleme hatası:', error);
+        console.error('Error stack:', error.stack);
+        
+        // Daha detaylı hata mesajı
+        let errorMessage = 'Medya yüklenemedi';
+        if (error.message.includes('Cloudinary')) {
+            errorMessage = 'Cloudinary bağlantı hatası: ' + error.message;
+        } else if (error.message.includes('MongoDB')) {
+            errorMessage = 'Veritabanı bağlantı hatası: ' + error.message;
+        } else {
+            errorMessage = error.message;
+        }
+        
         res.status(500).json({
             success: false,
-            message: 'Medya yüklenemedi',
-            error: error.message
+            message: errorMessage,
+            error: process.env.NODE_ENV === 'development' ? error.message : 'Bir hata oluştu'
         });
     }
 });

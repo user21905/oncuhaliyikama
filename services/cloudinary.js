@@ -2,6 +2,11 @@ const cloudinary = require('cloudinary').v2;
 require('dotenv').config();
 
 // Cloudinary konfigürasyonu
+console.log('=== CLOUDINARY KONFİGÜRASYONU ===');
+console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? 'VAR' : 'YOK');
+console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? 'VAR' : 'YOK');
+console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? 'VAR' : 'YOK');
+
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -11,6 +16,7 @@ cloudinary.config({
 class CloudinaryService {
     constructor() {
         // Upload preset kullanmıyoruz, doğrudan API ile yükleme yapacağız
+        console.log('CloudinaryService başlatıldı');
     }
 
     /**
@@ -21,6 +27,11 @@ class CloudinaryService {
      */
     async uploadFile(file, options = {}) {
         try {
+            console.log('=== CLOUDINARY UPLOAD BAŞLADI ===');
+            console.log('File type:', typeof file);
+            console.log('File length:', file.length);
+            console.log('Options:', options);
+            
             const {
                 folder = 'bismilvinc',
                 public_id = null,
@@ -32,6 +43,8 @@ class CloudinaryService {
 
             // Dosya formatını kontrol et
             const fileFormat = this.getFileFormat(file);
+            console.log('Detected file format:', fileFormat);
+            
             if (!allowed_formats.includes(fileFormat.toLowerCase())) {
                 throw new Error(`Desteklenmeyen dosya formatı: ${fileFormat}`);
             }
@@ -59,7 +72,17 @@ class CloudinaryService {
                 ];
             }
 
+            console.log('Upload options:', uploadOptions);
+            console.log('Cloudinary upload başlıyor...');
+
             const result = await cloudinary.uploader.upload(file, uploadOptions);
+
+            console.log('Cloudinary upload başarılı:', {
+                public_id: result.public_id,
+                url: result.secure_url,
+                format: result.format,
+                size: result.bytes
+            });
 
             return {
                 success: true,
@@ -74,7 +97,10 @@ class CloudinaryService {
                 }
             };
         } catch (error) {
+            console.error('=== CLOUDINARY UPLOAD HATASI ===');
             console.error('Cloudinary yükleme hatası:', error);
+            console.error('Error stack:', error.stack);
+            
             return {
                 success: false,
                 error: error.message
@@ -90,15 +116,24 @@ class CloudinaryService {
      */
     async uploadBase64(base64Data, options = {}) {
         try {
+            console.log('=== CLOUDINARY BASE64 UPLOAD BAŞLADI ===');
+            console.log('Base64 data length:', base64Data.length);
+            
             // Base64 prefix'ini kontrol et ve düzenle
             let dataUrl = base64Data;
             if (!dataUrl.startsWith('data:')) {
                 dataUrl = `data:image/jpeg;base64,${base64Data}`;
+                console.log('Base64 prefix eklendi');
             }
 
+            console.log('Data URL prefix:', dataUrl.substring(0, 50) + '...');
+            
             return await this.uploadFile(dataUrl, options);
         } catch (error) {
+            console.error('=== CLOUDINARY BASE64 UPLOAD HATASI ===');
             console.error('Base64 yükleme hatası:', error);
+            console.error('Error stack:', error.stack);
+            
             return {
                 success: false,
                 error: error.message
