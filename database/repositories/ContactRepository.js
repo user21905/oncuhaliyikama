@@ -7,8 +7,10 @@ class ContactRepository {
     }
 
     async getCollection() {
-        const db = await databaseConnection.connect();
-        return db.collection(this.collectionName);
+        if (!databaseConnection.isConnected) {
+            throw new Error('MongoDB bağlantısı yok');
+        }
+        return databaseConnection.getDb().collection(this.collectionName);
     }
 
     async create(contactData) {

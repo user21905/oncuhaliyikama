@@ -1542,13 +1542,13 @@ const startServer = async () => {
             console.log('📝 Uygulama MongoDB olmadan çalışmaya devam edecek');
         }
 
-        // Mongoose bağlantısını dene
+        // Mongoose bağlantısını dene (sadece MongoDB bağlantısı başarılıysa)
         try {
-            if (process.env.MONGODB_URI && process.env.MONGODB_URI !== 'your_mongodb_connection_string') {
+            if (databaseConnection.isConnected && process.env.MONGODB_URI) {
                 await mongooseConnection.connect();
                 console.log('✅ Mongoose bağlantısı başarılı');
             } else {
-                console.log('⚠️ Mongoose bağlantısı atlandı - MONGODB_URI yok');
+                console.log('⚠️ Mongoose bağlantısı atlandı - MongoDB bağlantısı yok');
             }
         } catch (mongooseError) {
             console.warn('⚠️ Mongoose bağlantısı başarısız:', mongooseError.message);

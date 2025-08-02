@@ -6,8 +6,10 @@ class ServiceRepository {
     }
 
     async getCollection() {
-        const db = databaseConnection.getDb();
-        return db.collection(this.collectionName);
+        if (!databaseConnection.isConnected) {
+            throw new Error('MongoDB bağlantısı yok');
+        }
+        return databaseConnection.getDb().collection(this.collectionName);
     }
 
     async create(serviceData) {
