@@ -524,6 +524,57 @@ app.post('/api/admin/login', async (req, res) => {
             process.env.JWT_SECRET = 'bismil-vinc-fallback-secret-2024';
         }
 
+        // MongoDB bağlantısı kontrolü
+        if (!databaseConnection.isConnected()) {
+            console.log('MongoDB bağlantısı yok, hardcoded admin kontrolü yapılıyor');
+            
+            // Hardcoded admin bilgileri
+            const defaultAdminEmail = process.env.ADMIN_EMAIL || 'admin@bismilvinc.com';
+            const defaultAdminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+            
+            console.log('Beklenen admin bilgileri:', { 
+                email: defaultAdminEmail, 
+                password: defaultAdminPassword ? '***' : 'boş' 
+            });
+            
+            if (email === defaultAdminEmail && password === defaultAdminPassword) {
+                console.log('Hardcoded admin girişi başarılı');
+                
+                // Generate JWT token
+                const token = jwt.sign(
+                    { 
+                        userId: 'admin-user-id', 
+                        email: email, 
+                        role: 'admin' 
+                    },
+                    process.env.JWT_SECRET,
+                    { expiresIn: '24h' }
+                );
+
+                console.log('Login başarılı, token oluşturuldu');
+                console.log('=== ADMIN LOGIN TAMAMLANDI ===');
+                
+                return res.json({
+                    success: true,
+                    message: 'Giriş başarılı',
+                    token,
+                    user: {
+                        id: 'admin-user-id',
+                        name: 'Admin',
+                        email: email,
+                        role: 'admin'
+                    }
+                });
+            } else {
+                console.log('Hardcoded admin bilgileri eşleşmedi');
+                return res.status(401).json({
+                    success: false,
+                    message: 'Geçersiz e-posta veya şifre'
+                });
+            }
+        }
+
+        // MongoDB bağlantısı varsa normal akış
         const userRepo = new UserRepository();
         console.log('Kullanıcı aranıyor:', email);
         
@@ -612,6 +663,19 @@ app.get('/api/admin/validate', authenticateAdmin, async (req, res) => {
 // Admin Dashboard Stats
 app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
     try {
+        console.log('Admin stats isteği alındı');
+        
+        // MongoDB bağlantısı kontrolü
+        if (!databaseConnection.isConnected()) {
+            console.log('MongoDB bağlantısı yok, fallback stats döndürülüyor');
+            return res.json({
+                services: 4,
+                contacts: 0,
+                pageViews: 0,
+                media: 0
+            });
+        }
+
         const contactRepo = new ContactRepository();
         const settingsRepo = new SettingsRepository();
 
@@ -621,18 +685,23 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
         ]);
 
         const stats = {
-            services: 5, // Static for now, can be made dynamic
+            services: 4, // Static for now, can be made dynamic
             contacts: contacts.total || 0,
             pageViews: 0, // Can be implemented with analytics
             media: 0 // Can be implemented with media count
         };
 
+        console.log('Stats başarıyla getirildi:', stats);
         res.json(stats);
     } catch (error) {
         console.error('Stats error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'İstatistikler yüklenemedi'
+        
+        // Hata durumunda fallback stats döndür
+        res.json({
+            services: 4,
+            contacts: 0,
+            pageViews: 0,
+            media: 0
         });
     }
 });
