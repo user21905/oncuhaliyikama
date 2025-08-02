@@ -525,7 +525,7 @@ app.post('/api/admin/login', async (req, res) => {
         }
 
         // MongoDB bağlantısı kontrolü
-        if (!databaseConnection.isConnected()) {
+        if (!databaseConnection.isConnected) {
             console.log('MongoDB bağlantısı yok, hardcoded admin kontrolü yapılıyor');
             
             // Hardcoded admin bilgileri
@@ -666,7 +666,7 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
         console.log('Admin stats isteği alındı');
         
         // MongoDB bağlantısı kontrolü
-        if (!databaseConnection.isConnected()) {
+        if (!databaseConnection.isConnected) {
             console.log('MongoDB bağlantısı yok, fallback stats döndürülüyor');
             return res.json({
                 services: 4,
