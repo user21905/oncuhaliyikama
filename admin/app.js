@@ -448,24 +448,37 @@ class AdminPanel {
 
     async loadDashboardStats() {
         try {
+            console.log('=== LOAD DASHBOARD STATS BAŞLADI ===');
             const response = await fetch('/api/admin/stats', {
-                headers: {
-                    'Authorization': `Bearer ${this.token}`
-                }
+                headers: { 'Authorization': `Bearer ${this.token}` }
             });
-
+            
+            console.log('Stats response status:', response.status);
+            
             if (response.ok) {
                 const stats = await response.json();
+                console.log('Stats data:', stats);
+                
                 document.getElementById('servicesCount').textContent = stats.services || 0;
                 document.getElementById('contactsCount').textContent = stats.contacts || 0;
                 document.getElementById('pageViews').textContent = stats.pageViews || 0;
                 document.getElementById('mediaCount').textContent = stats.media || 0;
-
-                // Load recent contacts
-                await this.loadRecentContacts();
+            } else {
+                console.error('Stats response not ok:', response.status);
+                // Fallback değerler
+                document.getElementById('servicesCount').textContent = '0';
+                document.getElementById('contactsCount').textContent = '0';
+                document.getElementById('pageViews').textContent = '0';
+                document.getElementById('mediaCount').textContent = '0';
             }
         } catch (error) {
-            console.error('Stats loading error:', error);
+            console.error('=== LOAD DASHBOARD STATS HATASI ===');
+            console.error('Dashboard stats loading error:', error);
+            // Fallback değerler
+            document.getElementById('servicesCount').textContent = '0';
+            document.getElementById('contactsCount').textContent = '0';
+            document.getElementById('pageViews').textContent = '0';
+            document.getElementById('mediaCount').textContent = '0';
         }
     }
 
@@ -1013,14 +1026,35 @@ class AdminPanel {
             return;
         }
         
+        // Dosya boyutu kontrolü (10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            mediaMessage.textContent = 'Dosya boyutu çok büyük. Maksimum 10MB olmalıdır.';
+            mediaMessage.className = 'message error';
+            return;
+        }
+        
+        // Dosya tipi kontrolü
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+            mediaMessage.textContent = 'Sadece JPEG, PNG ve GIF dosyaları kabul edilir.';
+            mediaMessage.className = 'message error';
+            return;
+        }
+        
         // Görseli base64'e çevir
         const reader = new FileReader();
         reader.onload = async (event) => {
-            const base64Data = event.target.result.split(',')[1];
+            const base64Data = event.target.result; // Tam data URL'yi gönder
             mediaMessage.textContent = 'Yükleniyor...';
             mediaMessage.className = 'message info';
             
             try {
+                console.log('=== FRONTEND MEDIA UPLOAD BAŞLADI ===');
+                console.log('Target field:', targetField);
+                console.log('File name:', file.name);
+                console.log('File size:', file.size);
+                console.log('File type:', file.type);
+                
                 const response = await fetch('/api/admin/media/upload', {
                     method: 'POST',
                     headers: {
@@ -1034,9 +1068,12 @@ class AdminPanel {
                     })
                 });
                 
-                const data = await response.json();
+                console.log('Response status:', response.status);
                 
-                if (data.success && data.url) {
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok && data.success && data.url) {
                     mediaMessage.textContent = 'Görsel başarıyla yüklendi!';
                     mediaMessage.className = 'message success';
                     mediaPreview.innerHTML = `<img src="${data.url}" alt="Yüklenen görsel" style="max-width:300px;max-height:200px;">`;
@@ -1044,15 +1081,26 @@ class AdminPanel {
                     // Formu temizle
                     mediaFileInput.value = '';
                     mediaTargetSelect.value = '';
+                    
+                    // Mevcut görselleri yenile
+                    this.loadMedia();
                 } else {
+                    console.error('Upload failed:', data);
                     mediaMessage.textContent = data.message || 'Yükleme başarısız.';
                     mediaMessage.className = 'message error';
                 }
             } catch (error) {
+                console.error('=== FRONTEND MEDIA UPLOAD HATASI ===');
                 console.error('Media upload error:', error);
-                mediaMessage.textContent = 'Bir hata oluştu.';
+                mediaMessage.textContent = 'Bağlantı hatası: ' + error.message;
                 mediaMessage.className = 'message error';
             }
+        };
+        
+        reader.onerror = (error) => {
+            console.error('File read error:', error);
+            mediaMessage.textContent = 'Dosya okuma hatası.';
+            mediaMessage.className = 'message error';
         };
         
         reader.readAsDataURL(file);

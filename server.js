@@ -801,19 +801,6 @@ app.post('/api/admin/login', async (req, res) => {
     }
 });
 
-// Validate Admin Token
-app.get('/api/admin/validate', authenticateAdmin, async (req, res) => {
-    res.json({
-        success: true,
-        user: {
-            id: req.user._id,
-            name: req.user.name,
-            email: req.user.email,
-            role: req.user.role
-        }
-    });
-});
-
 // JWT Token Validation
 app.get('/api/admin/validate', authenticateAdmin, async (req, res) => {
     try {
@@ -824,7 +811,12 @@ app.get('/api/admin/validate', authenticateAdmin, async (req, res) => {
         res.json({
             success: true,
             message: 'Token geçerli',
-            user: req.user
+            user: {
+                id: req.user._id,
+                name: req.user.name,
+                email: req.user.email,
+                role: req.user.role
+            }
         });
     } catch (error) {
         console.error('Token validation error:', error);
