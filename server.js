@@ -624,59 +624,50 @@ app.get('/api/health', async (req, res) => {
 
 // Environment variables test endpoint
 app.get('/api/test/env', (req, res) => {
-    const envVars = {
-        // Supabase
-        SUPABASE_URL: process.env.SUPABASE_URL ? 'VAR' : 'YOK',
-        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ? 'VAR' : 'YOK',
-        
-        // JWT
-        JWT_SECRET: process.env.JWT_SECRET ? 'VAR' : 'YOK',
-        
-        // Admin
-        ADMIN_EMAIL: process.env.ADMIN_EMAIL ? 'VAR' : 'YOK',
-        ADMIN_PASSWORD: process.env.ADMIN_PASSWORD ? 'VAR' : 'YOK',
-        
-        // Cloudinary
-        CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME ? 'VAR' : 'YOK',
-        CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY ? 'VAR' : 'YOK',
-        CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET ? 'VAR' : 'YOK'
-    };
-    
-    // Placeholder kontrolü
-    const placeholderChecks = {
-        supabase_placeholder: (
-            process.env.SUPABASE_URL === 'your_supabase_url' ||
-            process.env.SUPABASE_ANON_KEY === 'your_supabase_anon_key'
-        ),
-        cloudinary_placeholder: (
-            process.env.CLOUDINARY_CLOUD_NAME === 'your_cloud_name' ||
-            process.env.CLOUDINARY_API_KEY === 'your_api_key' ||
-            process.env.CLOUDINARY_API_SECRET === 'your_api_secret'
-        )
-    };
-    
-    const hasAllRequiredVars = envVars.SUPABASE_URL === 'VAR' && 
-                              envVars.SUPABASE_ANON_KEY === 'VAR' &&
-                              envVars.JWT_SECRET === 'VAR' && 
-                              envVars.ADMIN_EMAIL === 'VAR' && 
-                              envVars.ADMIN_PASSWORD === 'VAR' &&
-                              envVars.CLOUDINARY_CLOUD_NAME === 'VAR' &&
-                              envVars.CLOUDINARY_API_KEY === 'VAR' &&
-                              envVars.CLOUDINARY_API_SECRET === 'VAR';
-    
-    const hasPlaceholders = placeholderChecks.supabase_placeholder || placeholderChecks.cloudinary_placeholder;
-    
-    res.json({
-        success: hasAllRequiredVars && !hasPlaceholders,
-        environment_variables: envVars,
-        placeholder_checks: placeholderChecks,
-        has_placeholders: hasPlaceholders,
-        message: hasAllRequiredVars && !hasPlaceholders ? 
-            'Tüm environment variables doğru' : 
-            hasPlaceholders ? 
-                'Environment variables placeholder değerler içeriyor' :
-                'Bazı environment variables eksik'
-    });
+    try {
+        const envVars = {
+            SUPABASE_URL: process.env.SUPABASE_URL ? 'VAR' : 'YOK',
+            SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ? 'VAR' : 'YOK',
+            JWT_SECRET: process.env.JWT_SECRET ? 'VAR' : 'YOK',
+            ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'YOK',
+            ADMIN_PASSWORD: process.env.ADMIN_PASSWORD ? 'VAR' : 'YOK',
+            CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME ? 'VAR' : 'YOK',
+            CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY ? 'VAR' : 'YOK',
+            CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET ? 'VAR' : 'YOK'
+        };
+
+        // Placeholder kontrolü
+        const placeholderChecks = {
+            supabase_placeholder: process.env.SUPABASE_URL && process.env.SUPABASE_URL.includes('your_'),
+            cloudinary_placeholder: process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_CLOUD_NAME.includes('your_')
+        };
+
+        const hasPlaceholders = Object.values(placeholderChecks).some(Boolean);
+        const hasAllRequiredVars = envVars.SUPABASE_URL === 'VAR' && 
+                                 envVars.SUPABASE_ANON_KEY === 'VAR' && 
+                                 envVars.JWT_SECRET === 'VAR' && 
+                                 envVars.ADMIN_EMAIL !== 'YOK' && 
+                                 envVars.ADMIN_PASSWORD === 'VAR';
+
+        res.json({
+            success: !hasPlaceholders && hasAllRequiredVars,
+            environment_variables: envVars,
+            placeholder_checks: placeholderChecks,
+            has_placeholders: hasPlaceholders,
+            has_all_required: hasAllRequiredVars,
+            message: hasPlaceholders ? 
+                'Environment variables placeholder değerler içeriyor' : 
+                hasAllRequiredVars ? 
+                    'Tüm ortam değişkenleri doğru' : 
+                    'Bazı gerekli environment variables eksik'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'Environment test hatası'
+        });
+    }
 });
 
 // Cloudinary environment variables test endpoint
@@ -757,61 +748,61 @@ app.post('/api/admin/login', async (req, res) => {
             });
         }
 
+        // Önce hardcoded admin kontrolü yap
+        console.log('Hardcoded admin kontrolü yapılıyor...');
+        console.log('Beklenen admin bilgileri:', { 
+            email: adminEmail, 
+            password: adminPassword ? '***' : 'boş' 
+        });
+        
+        console.log('Karşılaştırma:', {
+            emailMatch: email === adminEmail,
+            passwordMatch: password === adminPassword
+        });
+        
+        if (email === adminEmail && password === adminPassword) {
+            console.log('Hardcoded admin girişi başarılı');
+            
+            // Generate JWT token
+            const token = jwt.sign(
+                { 
+                    userId: 'admin-user-id', 
+                    email: email, 
+                    role: 'admin' 
+                },
+                jwtSecret,
+                { expiresIn: '24h' }
+            );
+
+            console.log('Login başarılı, token oluşturuldu');
+            console.log('Token örneği:', token.substring(0, 50) + '...');
+            console.log('=== ADMIN LOGIN TAMAMLANDI ===');
+            
+            return res.json({
+                success: true,
+                message: 'Giriş başarılı',
+                token,
+                user: {
+                    id: 'admin-user-id',
+                    name: 'Admin',
+                    email: email,
+                    role: 'admin'
+                }
+            });
+        }
+
         // Supabase bağlantısı kontrolü
         const isDbConnected = supabaseConnection.isConnected;
         console.log('Supabase bağlantı durumu:', isDbConnected ? 'BAĞLI' : 'BAĞLI DEĞİL');
 
         if (!isDbConnected) {
-            console.log('Supabase bağlantısı yok, hardcoded admin kontrolü yapılıyor');
-            
-            console.log('Beklenen admin bilgileri:', { 
-                email: adminEmail, 
-                password: adminPassword ? '***' : 'boş' 
+            console.log('Supabase bağlantısı yok, hardcoded admin bilgileri eşleşmedi');
+            console.log('Girilen:', { email, password: '***' });
+            console.log('Beklenen:', { email: adminEmail, password: '***' });
+            return res.status(401).json({
+                success: false,
+                message: 'Geçersiz e-posta veya şifre'
             });
-            
-            console.log('Karşılaştırma:', {
-                emailMatch: email === adminEmail,
-                passwordMatch: password === adminPassword
-            });
-            
-            if (email === adminEmail && password === adminPassword) {
-                console.log('Hardcoded admin girişi başarılı');
-                
-                // Generate JWT token
-                const token = jwt.sign(
-                    { 
-                        userId: 'admin-user-id', 
-                        email: email, 
-                        role: 'admin' 
-                    },
-                    jwtSecret,
-                    { expiresIn: '24h' }
-                );
-
-                console.log('Login başarılı, token oluşturuldu');
-                console.log('Token örneği:', token.substring(0, 50) + '...');
-                console.log('=== ADMIN LOGIN TAMAMLANDI ===');
-                
-                return res.json({
-                    success: true,
-                    message: 'Giriş başarılı',
-                    token,
-                    user: {
-                        id: 'admin-user-id',
-                        name: 'Admin',
-                        email: email,
-                        role: 'admin'
-                    }
-                });
-            } else {
-                console.log('Hardcoded admin bilgileri eşleşmedi');
-                console.log('Girilen:', { email, password: '***' });
-                console.log('Beklenen:', { email: adminEmail, password: '***' });
-                return res.status(401).json({
-                    success: false,
-                    message: 'Geçersiz e-posta veya şifre'
-                });
-            }
         }
 
         // Supabase bağlantısı varsa normal akış
