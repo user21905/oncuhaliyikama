@@ -788,11 +788,19 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
 // Recent Contacts
 app.get('/api/admin/contacts/recent', authenticateAdmin, async (req, res) => {
     try {
+        console.log('=== ADMIN RECENT CONTACTS BAŞLADI ===');
+        
+        if (!databaseConnection.isConnected) {
+            console.log('MongoDB bağlantısı yok, boş son iletişim listesi döndürülüyor');
+            return res.json([]);
+        }
+        
         const contactRepo = new ContactRepository();
         const contacts = await contactRepo.getRecentContacts(5);
+        console.log('Son iletişimler başarıyla yüklendi:', contacts.length);
         res.json(contacts);
     } catch (error) {
-        console.error('Recent contacts error:', error);
+        console.error('Son iletişimler hatası:', error);
         res.status(500).json({
             success: false,
             message: 'Mesajlar yüklenemedi'
@@ -803,11 +811,19 @@ app.get('/api/admin/contacts/recent', authenticateAdmin, async (req, res) => {
 // All Contacts
 app.get('/api/admin/contacts', authenticateAdmin, async (req, res) => {
     try {
+        console.log('=== ADMIN CONTACTS BAŞLADI ===');
+        
+        if (!databaseConnection.isConnected) {
+            console.log('MongoDB bağlantısı yok, boş iletişim listesi döndürülüyor');
+            return res.json([]);
+        }
+        
         const contactRepo = new ContactRepository();
         const contacts = await contactRepo.findAll();
+        console.log('İletişimler başarıyla yüklendi:', contacts.length);
         res.json(contacts);
     } catch (error) {
-        console.error('Contacts error:', error);
+        console.error('İletişimler hatası:', error);
         res.status(500).json({
             success: false,
             message: 'Mesajlar yüklenemedi'
@@ -818,11 +834,38 @@ app.get('/api/admin/contacts', authenticateAdmin, async (req, res) => {
 // Admin Settings
 app.get('/api/admin/settings', authenticateAdmin, async (req, res) => {
     try {
+        console.log('=== ADMIN SETTINGS BAŞLADI ===');
+        
+        if (!databaseConnection.isConnected) {
+            console.log('MongoDB bağlantısı yok, hardcoded ayarlar döndürülüyor');
+            const hardcodedSettings = {
+                site_title: 'Bismil Vinç - Diyarbakır Mobil Vinç Hizmetleri',
+                site_description: 'Diyarbakır\'da 16 yıllık deneyimle profesyonel mobil vinç kiralama ve şantiye kaldırma hizmetleri',
+                phone_number: '+90 532 123 45 67',
+                email_address: 'info@bismilvinc.com',
+                address: 'Diyarbakır, Türkiye',
+                navbar_logo: 'https://res.cloudinary.com/demo/image/upload/v1/samples/landscapes/architecture-signs',
+                homepage_hero_bg: 'https://res.cloudinary.com/demo/image/upload/v1/samples/landscapes/architecture-signs',
+                primary_color: '#007bff',
+                primary_dark: '#0056b3',
+                background_color: '#ffffff',
+                font_family: 'Arial, sans-serif',
+                footer_description: 'Diyarbakır\'da profesyonel mobil vinç ve kurulum hizmetleri',
+                navbar_services_link: 'Hizmetler',
+                footer_services_link: 'Hizmetler',
+                footer_service2: 'Mobil Vinç Hizmetleri',
+                footer_service3: 'İnşaat Kurulum Hizmetleri',
+                footer_service4: 'Petrol Kuyusu Hizmetleri'
+            };
+            return res.json(hardcodedSettings);
+        }
+        
         const settingsRepo = new SettingsRepository();
         const settings = await settingsRepo.getSettingsAsObject();
+        console.log('Ayarlar başarıyla yüklendi');
         res.json(settings);
     } catch (error) {
-        console.error('Settings error:', error);
+        console.error('Ayarlar hatası:', error);
         res.status(500).json({
             success: false,
             message: 'Ayarlar yüklenemedi'
@@ -914,11 +957,48 @@ app.post('/api/admin/theme', authenticateAdmin, async (req, res) => {
 // Admin Services
 app.get('/api/admin/services', authenticateAdmin, async (req, res) => {
     try {
+        console.log('=== ADMIN SERVICES BAŞLADI ===');
+        
+        if (!databaseConnection.isConnected) {
+            console.log('MongoDB bağlantısı yok, hardcoded hizmetler döndürülüyor');
+            const hardcodedServices = [
+                {
+                    _id: '1',
+                    name: 'Mobil Vinç Hizmetleri',
+                    slug: 'mobilvinchizmeti',
+                    description: 'Diyarbakır\'da yüksek kapasiteli mobil vinç kiralama hizmetleri',
+                    icon: 'fas fa-truck',
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                },
+                {
+                    _id: '2',
+                    name: 'İnşaat Kurulum Hizmetleri',
+                    slug: 'insaatkurulumu',
+                    description: 'İnşaat projeleriniz için kapsamlı kurulum hizmetleri',
+                    icon: 'fas fa-building',
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                },
+                {
+                    _id: '3',
+                    name: 'Petrol Kuyusu Hizmetleri',
+                    slug: 'petrolkuyuhizmeti',
+                    description: 'Petrol sahalarında profesyonel vinç hizmetleri',
+                    icon: 'fas fa-oil-can',
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                }
+            ];
+            return res.json(hardcodedServices);
+        }
+        
         const serviceRepo = new ServiceRepository();
         const services = await serviceRepo.findAll();
+        console.log('Hizmetler başarıyla yüklendi:', services.length);
         res.json(services);
     } catch (error) {
-        console.error('Services error:', error);
+        console.error('Hizmetler hatası:', error);
         res.status(500).json({
             success: false,
             message: 'Hizmetler yüklenemedi'
@@ -1173,6 +1253,20 @@ app.post('/api/admin/footer/update', authenticateAdmin, async (req, res) => {
 // Footer ayarlarını getir
 app.get('/api/admin/footer', authenticateAdmin, async (req, res) => {
     try {
+        console.log('=== ADMIN FOOTER BAŞLADI ===');
+        
+        if (!databaseConnection.isConnected) {
+            console.log('MongoDB bağlantısı yok, hardcoded footer ayarları döndürülüyor');
+            const hardcodedFooterSettings = {
+                footer_description: 'Diyarbakır\'da profesyonel mobil vinç ve kurulum hizmetleri',
+                footer_services_link: 'Hizmetler',
+                footer_service2: 'Mobil Vinç Hizmetleri',
+                footer_service3: 'İnşaat Kurulum Hizmetleri',
+                footer_service4: 'Petrol Kuyusu Hizmetleri'
+            };
+            return res.json({ success: true, data: hardcodedFooterSettings });
+        }
+        
         console.log('Footer ayarları getirme isteği alındı');
         const settingsRepo = new SettingsRepository();
         const settings = await settingsRepo.getPublicSettingsAsObject();
