@@ -11,6 +11,7 @@ require('dotenv').config();
 // Database bağlantısı
 const databaseConnection = require('./database/connection');
 const mongooseConnection = require('./database/mongoose-connection');
+const supabaseConnection = require('./database/supabase-connection');
 
 // Repositories
 const ContactRepository = require('./database/repositories/ContactRepository');
@@ -1604,6 +1605,38 @@ const startServer = async () => {
         console.log('📝 Uygulama temel işlevlerle çalışmaya devam edecek');
     }
 };
+
+// Supabase test endpoint
+app.get('/api/test/supabase', async (req, res) => {
+    try {
+        const connectionStatus = supabaseConnection.getConnectionStatus();
+        const supabaseUrl = process.env.SUPABASE_URL ? 'VAR' : 'YOK';
+        const supabaseKey = process.env.SUPABASE_ANON_KEY ? 'VAR' : 'YOK';
+        
+        const healthCheck = await supabaseConnection.healthCheck();
+        
+        res.json({
+            success: connectionStatus.isConnected,
+            supabase_connection: connectionStatus.isConnected ? 'BAĞLI' : 'BAĞLANTI YOK',
+            supabase_url: supabaseUrl,
+            supabase_key: supabaseKey,
+            connection_error: connectionStatus.error,
+            health_status: healthCheck.status,
+            health_error: healthCheck.error,
+            message: connectionStatus.isConnected ? 
+                'Supabase bağlantısı aktif ve sağlıklı' : 
+                connectionStatus.error ? 
+                    `Supabase bağlantı hatası: ${connectionStatus.error}` :
+                    'Supabase bağlantısı yok - SUPABASE_URL ve SUPABASE_ANON_KEY kontrol edin'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'Supabase test hatası'
+        });
+    }
+});
 
 // Vercel için export
 module.exports = app;
