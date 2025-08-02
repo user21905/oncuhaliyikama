@@ -75,10 +75,6 @@ class DatabaseConnection {
                 socketTimeoutMS: 45000,
                 connectTimeoutMS: 30000,
                 heartbeatFrequencyMS: 10000,
-                ssl: true,
-                sslValidate: false,
-                tlsAllowInvalidCertificates: true,
-                tlsAllowInvalidHostnames: true,
                 useUnifiedTopology: true,
                 useNewUrlParser: true,
             };
