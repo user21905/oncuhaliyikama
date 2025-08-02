@@ -541,6 +541,7 @@ app.post('/api/admin/login', async (req, res) => {
     try {
         console.log('=== ADMIN LOGIN BAŞLADI ===');
         console.log('Admin login isteği alındı');
+        console.log('Request body:', req.body);
         
         // Environment variables kontrolü
         const jwtSecret = process.env.JWT_SECRET || 'bismil-vinc-fallback-secret-2024';
@@ -559,7 +560,8 @@ app.post('/api/admin/login', async (req, res) => {
         console.log('Login bilgileri:', { 
             email, 
             password: password ? '***' : 'boş',
-            expectedEmail: defaultAdminEmail
+            expectedEmail: defaultAdminEmail,
+            emailMatch: email === defaultAdminEmail
         });
 
         if (!email || !password) {
@@ -582,6 +584,11 @@ app.post('/api/admin/login', async (req, res) => {
                 password: defaultAdminPassword ? '***' : 'boş' 
             });
             
+            console.log('Karşılaştırma:', {
+                emailMatch: email === defaultAdminEmail,
+                passwordMatch: password === defaultAdminPassword
+            });
+            
             if (email === defaultAdminEmail && password === defaultAdminPassword) {
                 console.log('Hardcoded admin girişi başarılı');
                 
@@ -597,6 +604,7 @@ app.post('/api/admin/login', async (req, res) => {
                 );
 
                 console.log('Login başarılı, token oluşturuldu');
+                console.log('Token örneği:', token.substring(0, 50) + '...');
                 console.log('=== ADMIN LOGIN TAMAMLANDI ===');
                 
                 return res.json({
@@ -671,6 +679,7 @@ app.post('/api/admin/login', async (req, res) => {
         );
 
         console.log('Login başarılı, token oluşturuldu');
+        console.log('Token örneği:', token.substring(0, 50) + '...');
         console.log('=== ADMIN LOGIN TAMAMLANDI ===');
         
         res.json({
@@ -707,6 +716,27 @@ app.get('/api/admin/validate', authenticateAdmin, async (req, res) => {
             role: req.user.role
         }
     });
+});
+
+// JWT Token Validation
+app.get('/api/admin/validate', authenticateAdmin, async (req, res) => {
+    try {
+        console.log('=== TOKEN VALIDATION BAŞLADI ===');
+        console.log('Token validation isteği alındı');
+        console.log('User:', req.user);
+        
+        res.json({
+            success: true,
+            message: 'Token geçerli',
+            user: req.user
+        });
+    } catch (error) {
+        console.error('Token validation error:', error);
+        res.status(401).json({
+            success: false,
+            message: 'Token geçersiz'
+        });
+    }
 });
 
 // Admin Dashboard Stats

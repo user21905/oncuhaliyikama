@@ -232,30 +232,44 @@ class AdminPanel {
         const password = document.getElementById('password').value;
         const errorDiv = document.getElementById('loginError');
 
+        console.log('=== FRONTEND LOGIN BAŞLADI ===');
+        console.log('Giriş bilgileri:', { email, password: password ? '***' : 'boş' });
+
         try {
+            const requestBody = { email, password };
+            console.log('Request body:', requestBody);
+
             const response = await fetch('/api/admin/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify(requestBody)
             });
 
+            console.log('Response status:', response.status);
+            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
             const data = await response.json();
+            console.log('Response data:', data);
 
             if (response.ok) {
+                console.log('Login başarılı, token alındı');
                 this.token = data.token;
                 this.currentUser = data.user;
                 localStorage.setItem('adminToken', this.token);
+                console.log('Token localStorage\'a kaydedildi');
                 this.showDashboard();
                 this.showMessage('Başarıyla giriş yapıldı!', 'success');
             } else {
+                console.log('Login başarısız:', data.message);
                 errorDiv.textContent = data.message || 'Giriş başarısız';
                 errorDiv.style.display = 'block';
             }
         } catch (error) {
+            console.error('=== FRONTEND LOGIN HATASI ===');
             console.error('Login error:', error);
-            errorDiv.textContent = 'Bağlantı hatası';
+            errorDiv.textContent = 'Bağlantı hatası: ' + error.message;
             errorDiv.style.display = 'block';
         }
     }
