@@ -1608,19 +1608,16 @@ const startServer = async () => {
 // Vercel için export
 module.exports = app;
 
-// Development ortamında server'ı başlat
-if (process.env.NODE_ENV !== 'production') {
-    startServer().then(() => {
+// Her ortamda server'ı başlat
+startServer().then(() => {
+    if (process.env.NODE_ENV !== 'production') {
         app.listen(PORT, () => {
             console.log(`🚀 Server ${PORT} portunda çalışıyor`);
             console.log(`🌐 URL: http://localhost:${PORT}`);
             console.log(`🔧 Admin Panel: http://localhost:${PORT}/admin`);
         });
-    });
-} else {
-    // Production ortamında sadece başlat
-    startServer();
-}
+    }
+});
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
