@@ -1,29 +1,69 @@
 const cloudinary = require('cloudinary').v2;
 require('dotenv').config();
 
-// Cloudinary konfigürasyonu
-console.log('=== CLOUDINARY KONFİGÜRASYONU ===');
-console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? 'VAR' : 'YOK');
-console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? 'VAR' : 'YOK');
-console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? 'VAR' : 'YOK');
-
-// Placeholder credentials kontrolü
-if (process.env.CLOUDINARY_CLOUD_NAME === 'your_cloud_name' || 
-    process.env.CLOUDINARY_API_KEY === 'your_api_key' || 
-    process.env.CLOUDINARY_API_SECRET === 'your_api_secret') {
-    console.log('Cloudinary credentials placeholder değerler, konfigürasyon atlanıyor');
-} else {
-    cloudinary.config({
-        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-        api_key: process.env.CLOUDINARY_API_KEY,
-        api_secret: process.env.CLOUDINARY_API_SECRET
-    });
-}
-
 class CloudinaryService {
     constructor() {
-        // Upload preset kullanmıyoruz, doğrudan API ile yükleme yapacağız
-        console.log('CloudinaryService başlatıldı');
+        console.log('=== CLOUDINARY SERVICE BAŞLATILIYOR ===');
+        this.validateEnvironmentVariables();
+        this.configureCloudinary();
+    }
+
+    /**
+     * Environment variables'ları kontrol et
+     */
+    validateEnvironmentVariables() {
+        console.log('Environment variables kontrol ediliyor...');
+        
+        const requiredVars = {
+            CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+            CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+            CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET
+        };
+
+        const missingVars = [];
+        const placeholderVars = [];
+
+        for (const [key, value] of Object.entries(requiredVars)) {
+            if (!value) {
+                missingVars.push(key);
+                console.error(`❌ ${key}: EKSİK`);
+            } else if (value === 'your_cloud_name' || value === 'your_api_key' || value === 'your_api_secret') {
+                placeholderVars.push(key);
+                console.error(`⚠️ ${key}: PLACEHOLDER DEĞER (${value})`);
+            } else {
+                console.log(`✅ ${key}: VAR (${value.substring(0, 8)}...)`);
+            }
+        }
+
+        if (missingVars.length > 0) {
+            throw new Error(`Cloudinary environment variables eksik: ${missingVars.join(', ')}. Lütfen Vercel'de bu değişkenleri ayarlayın.`);
+        }
+
+        if (placeholderVars.length > 0) {
+            throw new Error(`Cloudinary environment variables placeholder değerler: ${placeholderVars.join(', ')}. Lütfen gerçek Cloudinary bilgilerinizi girin.`);
+        }
+
+        console.log('✅ Tüm Cloudinary environment variables geçerli');
+    }
+
+    /**
+     * Cloudinary'yi yapılandır
+     */
+    configureCloudinary() {
+        try {
+            cloudinary.config({
+                cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+                api_key: process.env.CLOUDINARY_API_KEY,
+                api_secret: process.env.CLOUDINARY_API_SECRET
+            });
+
+            console.log('✅ Cloudinary başarıyla yapılandırıldı');
+            console.log(`Cloud Name: ${process.env.CLOUDINARY_CLOUD_NAME}`);
+            console.log(`API Key: ${process.env.CLOUDINARY_API_KEY.substring(0, 8)}...`);
+        } catch (error) {
+            console.error('❌ Cloudinary yapılandırma hatası:', error);
+            throw new Error(`Cloudinary yapılandırılamadı: ${error.message}`);
+        }
     }
 
     /**
@@ -39,22 +79,8 @@ class CloudinaryService {
             console.log('File length:', file.length);
             console.log('Options:', options);
             
-            // Cloudinary credentials kontrolü
-            if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-                throw new Error('Cloudinary credentials eksik');
-            }
-            
-            // Placeholder credentials kontrolü
-            if (process.env.CLOUDINARY_CLOUD_NAME === 'your_cloud_name' || 
-                process.env.CLOUDINARY_API_KEY === 'your_api_key' || 
-                process.env.CLOUDINARY_API_SECRET === 'your_api_secret') {
-                throw new Error('Cloudinary credentials placeholder değerler');
-            }
-            
-            // Cloudinary konfigürasyonu kontrolü
-            if (!cloudinary.config().cloud_name) {
-                throw new Error('Cloudinary konfigürasyonu yapılmamış');
-            }
+            // Environment variables'ları tekrar kontrol et
+            this.validateEnvironmentVariables();
             
             const {
                 folder = 'bismilvinc',
@@ -70,12 +96,12 @@ class CloudinaryService {
             console.log('Detected file format:', fileFormat);
             
             if (!allowed_formats.includes(fileFormat.toLowerCase())) {
-                throw new Error(`Desteklenmeyen dosya formatı: ${fileFormat}`);
+                throw new Error(`Desteklenmeyen dosya formatı: ${fileFormat}. Desteklenen formatlar: ${allowed_formats.join(', ')}`);
             }
 
             // Dosya boyutunu kontrol et
             if (file.length > max_bytes) {
-                throw new Error(`Dosya boyutu çok büyük. Maksimum: ${max_bytes / 1024 / 1024}MB`);
+                throw new Error(`Dosya boyutu çok büyük. Maksimum: ${max_bytes / 1024 / 1024}MB, Mevcut: ${(file.length / 1024 / 1024).toFixed(2)}MB`);
             }
 
             const uploadOptions = {
@@ -101,7 +127,7 @@ class CloudinaryService {
 
             const result = await cloudinary.uploader.upload(file, uploadOptions);
 
-            console.log('Cloudinary upload başarılı:', {
+            console.log('✅ Cloudinary upload başarılı:', {
                 public_id: result.public_id,
                 url: result.secure_url,
                 format: result.format,
@@ -121,20 +147,22 @@ class CloudinaryService {
                 }
             };
         } catch (error) {
-            console.error('=== CLOUDINARY UPLOAD HATASI ===');
+            console.error('❌ CLOUDINARY UPLOAD HATASI ===');
             console.error('Cloudinary yükleme hatası:', error);
             console.error('Error stack:', error.stack);
             
             // Daha detaylı hata mesajları
             let errorMessage = error.message;
             if (error.message.includes('Invalid API key')) {
-                errorMessage = 'Geçersiz Cloudinary API anahtarı';
+                errorMessage = 'Geçersiz Cloudinary API anahtarı. Lütfen Vercel\'de CLOUDINARY_API_KEY değişkenini kontrol edin.';
             } else if (error.message.includes('Invalid signature')) {
-                errorMessage = 'Geçersiz Cloudinary imzası';
+                errorMessage = 'Geçersiz Cloudinary imzası. Lütfen CLOUDINARY_API_SECRET değişkenini kontrol edin.';
             } else if (error.message.includes('Resource not found')) {
-                errorMessage = 'Cloudinary kaynağı bulunamadı';
+                errorMessage = 'Cloudinary kaynağı bulunamadı.';
             } else if (error.message.includes('credentials')) {
-                errorMessage = 'Cloudinary ayarları eksik veya hatalı';
+                errorMessage = 'Cloudinary ayarları eksik veya hatalı. Lütfen tüm environment variables\'ları kontrol edin.';
+            } else if (error.message.includes('environment variables')) {
+                errorMessage = error.message; // Environment variables hatası zaten açık
             }
             
             return {
@@ -166,20 +194,22 @@ class CloudinaryService {
             
             return await this.uploadFile(dataUrl, options);
         } catch (error) {
-            console.error('=== CLOUDINARY BASE64 UPLOAD HATASI ===');
+            console.error('❌ CLOUDINARY BASE64 UPLOAD HATASI ===');
             console.error('Base64 yükleme hatası:', error);
             console.error('Error stack:', error.stack);
             
             // Daha detaylı hata mesajları
             let errorMessage = error.message;
             if (error.message.includes('Invalid API key')) {
-                errorMessage = 'Geçersiz Cloudinary API anahtarı';
+                errorMessage = 'Geçersiz Cloudinary API anahtarı. Lütfen Vercel\'de CLOUDINARY_API_KEY değişkenini kontrol edin.';
             } else if (error.message.includes('Invalid signature')) {
-                errorMessage = 'Geçersiz Cloudinary imzası';
+                errorMessage = 'Geçersiz Cloudinary imzası. Lütfen CLOUDINARY_API_SECRET değişkenini kontrol edin.';
             } else if (error.message.includes('Resource not found')) {
-                errorMessage = 'Cloudinary kaynağı bulunamadı';
+                errorMessage = 'Cloudinary kaynağı bulunamadı.';
             } else if (error.message.includes('credentials')) {
-                errorMessage = 'Cloudinary ayarları eksik veya hatalı';
+                errorMessage = 'Cloudinary ayarları eksik veya hatalı. Lütfen tüm environment variables\'ları kontrol edin.';
+            } else if (error.message.includes('environment variables')) {
+                errorMessage = error.message; // Environment variables hatası zaten açık
             }
             
             return {

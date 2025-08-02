@@ -1097,11 +1097,21 @@ class AdminPanel {
                     // Daha detaylı hata mesajları
                     if (data.error) {
                         if (data.error.includes('Cloudinary')) {
-                            errorMessage = 'Cloudinary bağlantı hatası: ' + data.error;
+                            if (data.error.includes('environment variables')) {
+                                errorMessage = '❌ Cloudinary ayarları eksik! Lütfen Vercel\'de CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY ve CLOUDINARY_API_SECRET değişkenlerini ayarlayın.';
+                            } else if (data.error.includes('Invalid API key')) {
+                                errorMessage = '❌ Geçersiz Cloudinary API anahtarı! Lütfen Vercel\'de CLOUDINARY_API_KEY değişkenini kontrol edin.';
+                            } else if (data.error.includes('Invalid signature')) {
+                                errorMessage = '❌ Geçersiz Cloudinary imzası! Lütfen Vercel\'de CLOUDINARY_API_SECRET değişkenini kontrol edin.';
+                            } else {
+                                errorMessage = '❌ Cloudinary hatası: ' + data.error;
+                            }
                         } else if (data.error.includes('MongoDB')) {
-                            errorMessage = 'Veritabanı hatası: ' + data.error;
+                            errorMessage = '⚠️ Veritabanı hatası: ' + data.error;
+                        } else if (data.error.includes('environment variables')) {
+                            errorMessage = '❌ ' + data.error;
                         } else {
-                            errorMessage = data.error;
+                            errorMessage = '❌ ' + data.error;
                         }
                     }
                     

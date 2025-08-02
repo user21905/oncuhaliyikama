@@ -443,91 +443,19 @@ app.post('/api/admin/media/upload', authenticateAdmin, async (req, res) => {
             });
         }
 
-        // Cloudinary environment variables kontrolü
-        console.log('Cloudinary environment variables kontrol ediliyor...');
-        console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? 'VAR' : 'YOK');
-        console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? 'VAR' : 'YOK');
-        console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? 'VAR' : 'YOK');
-
-        // Cloudinary credentials kontrolü
-        if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-            console.log('Cloudinary environment variables eksik, hardcoded URL döndürülüyor');
-            
-            const hardcodedUrl = 'https://res.cloudinary.com/demo/image/upload/v1/samples/landscapes/architecture-signs';
-            
-            // MongoDB bağlantısı kontrolü
-            if (!databaseConnection.isConnected) {
-                console.log('MongoDB bağlantısı yok, sadece hardcoded URL döndürülüyor');
-                return res.json({
-                    success: true,
-                    message: 'Görsel başarıyla yüklendi (demo URL - Cloudinary ayarları eksik)',
-                    url: hardcodedUrl,
-                    targetField
-                });
-            }
-            
-            // MongoDB bağlantısı varsa ayarı güncelle
-            try {
-                const settingsRepo = new SettingsRepository();
-                await settingsRepo.updateByKey(targetField, hardcodedUrl);
-                console.log('Hardcoded URL MongoDB\'ye kaydedildi:', targetField);
-                
-                return res.json({
-                    success: true,
-                    message: 'Görsel başarıyla yüklendi (demo URL - Cloudinary ayarları eksik)',
-                    url: hardcodedUrl,
-                    targetField
-                });
-            } catch (dbError) {
-                console.error('MongoDB güncelleme hatası:', dbError);
-                return res.status(500).json({
-                    success: false,
-                    message: 'Ayar güncellenemedi: ' + dbError.message
-                });
-            }
-        }
-
-        // Cloudinary credentials var ama geçerli mi kontrol et
-        console.log('Cloudinary credentials mevcut, geçerlilik kontrol ediliyor...');
-        if (process.env.CLOUDINARY_CLOUD_NAME === 'your_cloud_name' || 
-            process.env.CLOUDINARY_API_KEY === 'your_api_key' || 
-            process.env.CLOUDINARY_API_SECRET === 'your_api_secret') {
-            console.log('Cloudinary credentials placeholder değerler, hardcoded URL döndürülüyor');
-            
-            const hardcodedUrl = 'https://res.cloudinary.com/demo/image/upload/v1/samples/landscapes/architecture-signs';
-            
-            if (!databaseConnection.isConnected) {
-                return res.json({
-                    success: true,
-                    message: 'Görsel başarıyla yüklendi (demo URL - Cloudinary ayarları placeholder)',
-                    url: hardcodedUrl,
-                    targetField
-                });
-            }
-            
-            try {
-                const settingsRepo = new SettingsRepository();
-                await settingsRepo.updateByKey(targetField, hardcodedUrl);
-                console.log('Hardcoded URL MongoDB\'ye kaydedildi (placeholder credentials):', targetField);
-                
-                return res.json({
-                    success: true,
-                    message: 'Görsel başarıyla yüklendi (demo URL - Cloudinary ayarları placeholder)',
-                    url: hardcodedUrl,
-                    targetField
-                });
-            } catch (dbError) {
-                console.error('MongoDB güncelleme hatası:', dbError);
-                return res.status(500).json({
-                    success: false,
-                    message: 'Ayar güncellenemedi: ' + dbError.message
-                });
-            }
-        }
-
-        // Cloudinary servisini yükle (sadece geçerli credentials varsa)
+        // Cloudinary servisini yükle
         console.log('Cloudinary servisi yükleniyor...');
-        const cloudinaryService = require('./services/cloudinary');
+        let cloudinaryService;
+        try {
+            cloudinaryService = require('./services/cloudinary');
+            console.log('✅ Cloudinary servisi başarıyla yüklendi');
+        } catch (cloudinaryError) {
+            console.error('❌ Cloudinary servisi yüklenemedi:', cloudinaryError.message);
+            return res.status(500).json({
+                success: false,
+                message: cloudinaryError.message
+            });
+        }
         
         // Settings repository'yi yükle
         console.log('Settings repository yükleniyor...');
