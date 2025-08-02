@@ -133,22 +133,64 @@ app.use('/admin', express.static(path.join(__dirname, 'admin')));
 // Admin Authentication Middleware
 const authenticateAdmin = async (req, res, next) => {
     try {
+        console.log('=== AUTHENTICATE ADMIN BAŞLADI ===');
+        
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) {
+            console.log('Token bulunamadı');
             return res.status(401).json({ success: false, message: 'Token bulunamadı' });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Token alındı, doğrulanıyor...');
+        
+        // JWT_SECRET kontrolü
+        const jwtSecret = process.env.JWT_SECRET || 'bismil-vinc-fallback-secret-2024';
+        
+        const decoded = jwt.verify(token, jwtSecret);
+        console.log('Token doğrulandı, kullanıcı bilgileri:', {
+            userId: decoded.userId,
+            email: decoded.email,
+            role: decoded.role
+        });
+
+        // MongoDB bağlantısı kontrolü
+        if (!databaseConnection.isConnected) {
+            console.log('MongoDB bağlantısı yok, hardcoded admin kontrolü yapılıyor');
+            
+            // Hardcoded admin kontrolü
+            const defaultAdminEmail = process.env.ADMIN_EMAIL || 'admin@bismilvinc.com';
+            
+            if (decoded.email === defaultAdminEmail && decoded.role === 'admin') {
+                console.log('Hardcoded admin token doğrulandı');
+                req.user = {
+                    _id: decoded.userId,
+                    email: decoded.email,
+                    role: decoded.role,
+                    name: 'Admin'
+                };
+                next();
+                return;
+            } else {
+                console.log('Hardcoded admin token geçersiz');
+                return res.status(401).json({ success: false, message: 'Geçersiz token' });
+            }
+        }
+
+        // MongoDB bağlantısı varsa normal akış
         const userRepo = new UserRepository();
         const user = await userRepo.findById(decoded.userId);
 
         if (!user || user.role !== 'admin') {
+            console.log('Kullanıcı bulunamadı veya admin değil');
             return res.status(401).json({ success: false, message: 'Geçersiz token' });
         }
 
+        console.log('Admin kullanıcı doğrulandı:', user.email);
         req.user = user;
         next();
     } catch (error) {
+        console.error('=== AUTHENTICATE ADMIN HATASI ===');
+        console.error('Token doğrulama hatası:', error);
         return res.status(401).json({ success: false, message: 'Geçersiz token' });
     }
 };
@@ -225,7 +267,7 @@ app.get('/api/settings', async (req, res) => {
         console.log('API settings isteği alındı');
         
         // MongoDB bağlantısını kontrol et
-        if (!databaseConnection.isConnected()) {
+        if (!databaseConnection.isConnected) {
             console.log('MongoDB bağlantısı yok, fallback değerler döndürülüyor');
             return res.json({
                 success: true,
@@ -499,15 +541,26 @@ app.post('/api/admin/login', async (req, res) => {
     try {
         console.log('=== ADMIN LOGIN BAŞLADI ===');
         console.log('Admin login isteği alındı');
+        
+        // Environment variables kontrolü
+        const jwtSecret = process.env.JWT_SECRET || 'bismil-vinc-fallback-secret-2024';
+        const defaultAdminEmail = process.env.ADMIN_EMAIL || 'admin@bismilvinc.com';
+        const defaultAdminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+        
         console.log('Environment variables:', {
-            JWT_SECRET: process.env.JWT_SECRET ? 'VAR' : 'YOK',
-            ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'YOK',
+            JWT_SECRET: process.env.JWT_SECRET ? 'VAR' : 'YOK (fallback kullanılıyor)',
+            ADMIN_EMAIL: defaultAdminEmail,
+            ADMIN_PASSWORD: defaultAdminPassword ? 'VAR' : 'YOK',
             NODE_ENV: process.env.NODE_ENV
         });
         
         const { email, password } = req.body;
 
-        console.log('Login bilgileri:', { email, password: password ? '***' : 'boş' });
+        console.log('Login bilgileri:', { 
+            email, 
+            password: password ? '***' : 'boş',
+            expectedEmail: defaultAdminEmail
+        });
 
         if (!email || !password) {
             console.log('E-posta veya şifre eksik');
@@ -517,20 +570,12 @@ app.post('/api/admin/login', async (req, res) => {
             });
         }
 
-        // JWT_SECRET kontrolü
-        if (!process.env.JWT_SECRET) {
-            console.error('JWT_SECRET environment variable bulunamadı! Fallback kullanılıyor...');
-            // Fallback JWT secret
-            process.env.JWT_SECRET = 'bismil-vinc-fallback-secret-2024';
-        }
-
         // MongoDB bağlantısı kontrolü
-        if (!databaseConnection.isConnected) {
+        const isDbConnected = databaseConnection.isConnected;
+        console.log('MongoDB bağlantı durumu:', isDbConnected ? 'BAĞLI' : 'BAĞLI DEĞİL');
+
+        if (!isDbConnected) {
             console.log('MongoDB bağlantısı yok, hardcoded admin kontrolü yapılıyor');
-            
-            // Hardcoded admin bilgileri
-            const defaultAdminEmail = process.env.ADMIN_EMAIL || 'admin@bismilvinc.com';
-            const defaultAdminPassword = process.env.ADMIN_PASSWORD || 'admin123';
             
             console.log('Beklenen admin bilgileri:', { 
                 email: defaultAdminEmail, 
@@ -547,7 +592,7 @@ app.post('/api/admin/login', async (req, res) => {
                         email: email, 
                         role: 'admin' 
                     },
-                    process.env.JWT_SECRET,
+                    jwtSecret,
                     { expiresIn: '24h' }
                 );
 
@@ -567,6 +612,8 @@ app.post('/api/admin/login', async (req, res) => {
                 });
             } else {
                 console.log('Hardcoded admin bilgileri eşleşmedi');
+                console.log('Girilen:', { email, password: '***' });
+                console.log('Beklenen:', { email: defaultAdminEmail, password: '***' });
                 return res.status(401).json({
                     success: false,
                     message: 'Geçersiz e-posta veya şifre'
@@ -575,6 +622,7 @@ app.post('/api/admin/login', async (req, res) => {
         }
 
         // MongoDB bağlantısı varsa normal akış
+        console.log('MongoDB bağlantısı var, veritabanından kullanıcı aranıyor');
         const userRepo = new UserRepository();
         console.log('Kullanıcı aranıyor:', email);
         
@@ -618,7 +666,7 @@ app.post('/api/admin/login', async (req, res) => {
         console.log('JWT token oluşturuluyor...');
         const token = jwt.sign(
             { userId: user._id, email: user.email, role: user.role },
-            process.env.JWT_SECRET,
+            jwtSecret,
             { expiresIn: '24h' }
         );
 
@@ -639,6 +687,7 @@ app.post('/api/admin/login', async (req, res) => {
     } catch (error) {
         console.error('=== ADMIN LOGIN HATASI ===');
         console.error('Admin login error:', error);
+        console.error('Error stack:', error.stack);
         res.status(500).json({
             success: false,
             message: 'Giriş işlemi başarısız',
@@ -1141,47 +1190,89 @@ app.use((error, req, res, next) => {
 // Server başlatma
 const startServer = async () => {
     try {
-        // Database bağlantısı - hata durumunda devam et
+        console.log('🚀 Sunucu başlatılıyor...');
+        
+        // Environment variables kontrolü
+        console.log('Environment variables kontrol ediliyor...');
+        console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'VAR' : 'YOK');
+        console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'VAR' : 'YOK');
+        console.log('ADMIN_EMAIL:', process.env.ADMIN_EMAIL || 'admin@bismilvinc.com');
+        console.log('ADMIN_PASSWORD:', process.env.ADMIN_PASSWORD ? 'VAR' : 'YOK');
+        
+        // MongoDB bağlantısını dene
         try {
-            await databaseConnection.connect();
-            console.log('✅ MongoDB bağlantısı başarılı');
+            if (process.env.MONGODB_URI && process.env.MONGODB_URI !== 'your_mongodb_connection_string') {
+                await databaseConnection.connect();
+                console.log('✅ MongoDB bağlantısı başarılı');
+            } else {
+                console.log('⚠️ MONGODB_URI ayarlanmamış veya placeholder değer');
+                console.log('📝 Uygulama MongoDB olmadan çalışacak');
+            }
         } catch (dbError) {
-            console.warn('⚠️ MongoDB bağlantısı başarısız, devam ediliyor:', dbError.message);
+            console.warn('⚠️ MongoDB bağlantısı başarısız:', dbError.message);
+            console.log('📝 Uygulama MongoDB olmadan çalışmaya devam edecek');
         }
 
-        // Varsayılan ayarları yükle - hata durumunda devam et
+        // Mongoose bağlantısını dene
         try {
-            const settingsRepo = new SettingsRepository();
-            await settingsRepo.initializeSettings();
-            console.log('✅ Varsayılan ayarlar yüklendi');
-        } catch (settingsError) {
-            console.warn('⚠️ Ayarlar yüklenemedi, devam ediliyor:', settingsError.message);
+            if (process.env.MONGODB_URI && process.env.MONGODB_URI !== 'your_mongodb_connection_string') {
+                await mongooseConnection.connect();
+                console.log('✅ Mongoose bağlantısı başarılı');
+            } else {
+                console.log('⚠️ Mongoose bağlantısı atlandı - MONGODB_URI yok');
+            }
+        } catch (mongooseError) {
+            console.warn('⚠️ Mongoose bağlantısı başarısız:', mongooseError.message);
+            console.log('📝 Uygulama Mongoose olmadan çalışmaya devam edecek');
         }
 
-        // Varsayılan admin kullanıcısını oluştur - hata durumunda devam et
-        try {
-            const userRepo = new UserRepository();
-            await userRepo.initializeDefaultAdmin();
-            console.log('✅ Varsayılan admin kullanıcısı oluşturuldu');
-        } catch (userError) {
-            console.warn('⚠️ Admin kullanıcısı oluşturulamadı, devam ediliyor:', userError.message);
+        // Default admin kullanıcısını oluştur (sadece MongoDB bağlıysa)
+        if (databaseConnection.isConnected) {
+            try {
+                const userRepo = new UserRepository();
+                await userRepo.initializeDefaultAdmin();
+                console.log('✅ Default admin kullanıcısı kontrol edildi');
+            } catch (adminError) {
+                console.warn('⚠️ Default admin oluşturulamadı:', adminError.message);
+            }
+        } else {
+            console.log('📝 Default admin oluşturma atlandı - MongoDB bağlı değil');
         }
 
-        // Varsayılan hizmetleri oluştur - hata durumunda devam et
-        try {
-            const serviceRepo = new ServiceRepository();
-            await serviceRepo.initializeDefaultServices();
-            console.log('✅ Varsayılan hizmetler oluşturuldu');
-        } catch (serviceError) {
-            console.warn('⚠️ Hizmetler oluşturulamadı, devam ediliyor:', serviceError.message);
+        // Default ayarları oluştur (sadece MongoDB bağlıysa)
+        if (databaseConnection.isConnected) {
+            try {
+                const settingsRepo = new SettingsRepository();
+                await settingsRepo.initializeDefaultSettings();
+                console.log('✅ Default ayarlar kontrol edildi');
+            } catch (settingsError) {
+                console.warn('⚠️ Default ayarlar oluşturulamadı:', settingsError.message);
+            }
+        } else {
+            console.log('📝 Default ayarlar oluşturma atlandı - MongoDB bağlı değil');
         }
 
-        console.log(`🚀 Server hazır`);
+        // Varsayılan hizmetleri oluştur (sadece MongoDB bağlıysa)
+        if (databaseConnection.isConnected) {
+            try {
+                const serviceRepo = new ServiceRepository();
+                await serviceRepo.initializeDefaultServices();
+                console.log('✅ Varsayılan hizmetler oluşturuldu');
+            } catch (serviceError) {
+                console.warn('⚠️ Hizmetler oluşturulamadı, devam ediliyor:', serviceError.message);
+            }
+        } else {
+            console.log('📝 Varsayılan hizmetler oluşturma atlandı - MongoDB bağlı değil');
+        }
+
+        console.log('✅ Sunucu başlatma tamamlandı');
+        console.log('📝 Admin giriş bilgileri:');
+        console.log('   E-posta:', process.env.ADMIN_EMAIL || 'admin@bismilvinc.com');
+        console.log('   Şifre:', process.env.ADMIN_PASSWORD || 'admin123');
         console.log(`📱 Environment: ${process.env.NODE_ENV}`);
     } catch (error) {
-        console.error('❌ Server başlatma hatası:', error);
-        // Hata durumunda bile devam et
-        console.log('🔄 Server hata ile devam ediyor...');
+        console.error('❌ Sunucu başlatma hatası:', error);
+        console.log('📝 Uygulama temel işlevlerle çalışmaya devam edecek');
     }
 };
 
