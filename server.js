@@ -9,15 +9,13 @@ const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 // Database bağlantısı
-const databaseConnection = require('./database/connection');
-const mongooseConnection = require('./database/mongoose-connection');
 const supabaseConnection = require('./database/supabase-connection');
 
-// Repositories
-const ContactRepository = require('./database/repositories/ContactRepository');
-const SettingsRepository = require('./database/repositories/SettingsRepository');
-const UserRepository = require('./database/repositories/UserRepository');
-const ServiceRepository = require('./database/repositories/ServiceRepository');
+// Supabase Repositories
+const SupabaseContactRepository = require('./database/repositories/SupabaseContactRepository');
+const SupabaseSettingsRepository = require('./database/repositories/SupabaseSettingsRepository');
+const SupabaseUserRepository = require('./database/repositories/SupabaseUserRepository');
+const SupabaseServiceRepository = require('./database/repositories/SupabaseServiceRepository');
 
 // Middleware
 const { handleUploadError } = require('./middleware/upload');
@@ -154,14 +152,19 @@ const authenticateAdmin = async (req, res, next) => {
             role: decoded.role
         });
 
-        // MongoDB bağlantısı kontrolü
-        if (!databaseConnection.isConnected) {
-            console.log('MongoDB bağlantısı yok, hardcoded admin kontrolü yapılıyor');
+        // Supabase bağlantısı kontrolü
+        if (!supabaseConnection.isConnected) {
+            console.log('Supabase bağlantısı yok, hardcoded admin kontrolü yapılıyor');
             
             // Hardcoded admin kontrolü
-            const defaultAdminEmail = process.env.ADMIN_EMAIL || 'admin@bismilvinc.com';
+            const adminEmail = process.env.ADMIN_EMAIL;
             
-            if (decoded.email === defaultAdminEmail && decoded.role === 'admin') {
+            if (!adminEmail) {
+                console.log('ADMIN_EMAIL environment variable eksik');
+                return res.status(401).json({ success: false, message: 'Geçersiz token' });
+            }
+            
+            if (decoded.email === adminEmail && decoded.role === 'admin') {
                 console.log('Hardcoded admin token doğrulandı');
                 req.user = {
                     _id: decoded.userId,
@@ -177,7 +180,7 @@ const authenticateAdmin = async (req, res, next) => {
             }
         }
 
-        // MongoDB bağlantısı varsa normal akış
+        // Supabase bağlantısı varsa normal akış
         const userRepo = new UserRepository();
         const user = await userRepo.findById(decoded.userId);
 
@@ -267,9 +270,9 @@ app.get('/api/settings', async (req, res) => {
     try {
         console.log('API settings isteği alındı');
         
-        // MongoDB bağlantısını kontrol et
-        if (!databaseConnection.isConnected) {
-            console.log('MongoDB bağlantısı yok, fallback değerler döndürülüyor');
+        // Supabase bağlantısını kontrol et
+        if (!supabaseConnection.isConnected) {
+            console.log('Supabase bağlantısı yok, fallback değerler döndürülüyor');
             return res.json({
                 success: true,
                 data: {
@@ -305,7 +308,7 @@ app.get('/api/settings', async (req, res) => {
             });
         }
         
-        const settingsRepo = new SettingsRepository();
+        const settingsRepo = new SupabaseSettingsRepository();
         const settings = await settingsRepo.getPublicSettingsAsObject();
         
         console.log('Settings başarıyla getirildi');
@@ -343,7 +346,7 @@ app.post('/api/contact', async (req, res) => {
             });
         }
 
-        const contactRepo = new ContactRepository();
+        const contactRepo = new SupabaseContactRepository();
         const contactData = {
             name: name.trim(),
             phone: phone.trim(),
@@ -361,8 +364,8 @@ app.post('/api/contact', async (req, res) => {
             success: true,
             message: 'Mesajınız başarıyla gönderildi. En kısa sürede size dönüş yapacağız.',
             data: {
-                id: result._id,
-                timestamp: result.createdAt
+                id: result.id,
+                timestamp: result.created_at
             }
         });
     } catch (error) {
@@ -388,9 +391,9 @@ app.post('/api/upload', async (req, res) => {
         }
 
         const cloudinaryService = require('./services/cloudinary');
-        const settingsRepo = new SettingsRepository();
+        const settingsRepo = new SupabaseSettingsRepository();
         
-        const defaultFolder = await settingsRepo.getByKey('cloudinary_folder');
+        const defaultFolder = await settingsRepo.findByKey('cloudinary_folder');
         const uploadFolder = folder || (defaultFolder ? defaultFolder.value : 'bismilvinc');
 
         const result = await cloudinaryService.uploadBase64(base64Data, {
@@ -469,18 +472,18 @@ app.post('/api/admin/media/upload', authenticateAdmin, async (req, res) => {
         
         // Settings repository'yi yükle
         console.log('Settings repository yükleniyor...');
-        const settingsRepo = new SettingsRepository();
+        const settingsRepo = new SupabaseSettingsRepository();
         
-        // MongoDB bağlantısı kontrolü
-        console.log('MongoDB bağlantı durumu:', databaseConnection.isConnected);
-        if (!databaseConnection.isConnected) {
-            console.log('MongoDB bağlantısı yok, sadece Cloudinary yükleme yapılacak');
+        // Supabase bağlantısı kontrolü
+        console.log('Supabase bağlantı durumu:', supabaseConnection.isConnected);
+        if (!supabaseConnection.isConnected) {
+            console.log('Supabase bağlantısı yok, sadece Cloudinary yükleme yapılacak');
         }
         
         // Default folder'ı al
         let defaultFolder;
         try {
-            defaultFolder = await settingsRepo.getByKey('cloudinary_folder');
+            defaultFolder = await settingsRepo.findByKey('cloudinary_folder');
             console.log('Default folder:', defaultFolder);
         } catch (folderError) {
             console.log('Default folder alınamadı, varsayılan kullanılacak:', folderError.message);
@@ -501,9 +504,9 @@ app.post('/api/admin/media/upload', authenticateAdmin, async (req, res) => {
 
         if (result.success && result.data && result.data.url) {
             // İlgili ayarı güncelle
-            console.log('MongoDB bağlantı durumu:', databaseConnection.isConnected);
+            console.log('Supabase bağlantı durumu:', supabaseConnection.isConnected);
             
-            if (databaseConnection.isConnected) {
+            if (supabaseConnection.isConnected) {
                 try {
                     console.log('Ayar güncelleniyor:', targetField);
                     await settingsRepo.updateByKey(targetField, result.data.url);
@@ -526,14 +529,14 @@ app.post('/api/admin/media/upload', authenticateAdmin, async (req, res) => {
                     });
                 }
             } else {
-                console.log('MongoDB bağlantısı yok, sadece Cloudinary URL döndürülüyor');
-                // MongoDB bağlantısı yoksa sadece URL'i döndür
+                console.log('Supabase bağlantısı yok, sadece Cloudinary URL döndürülüyor');
+                // Supabase bağlantısı yoksa sadece URL'i döndür
                 res.json({
                     success: true,
                     message: 'Görsel yüklendi fakat veritabanı bağlantısı yok (URL kaydedilemedi)',
                     url: result.data.url,
                     targetField,
-                    warning: 'MongoDB bağlantısı yok'
+                    warning: 'Supabase bağlantısı yok'
                 });
             }
         } else {
@@ -552,7 +555,7 @@ app.post('/api/admin/media/upload', authenticateAdmin, async (req, res) => {
         let errorMessage = 'Medya yüklenemedi';
         if (error.message.includes('Cloudinary')) {
             errorMessage = 'Cloudinary bağlantı hatası: ' + error.message;
-        } else if (error.message.includes('MongoDB')) {
+        } else if (error.message.includes('Supabase')) {
             errorMessage = 'Veritabanı bağlantı hatası: ' + error.message;
         } else {
             errorMessage = error.message;
@@ -578,7 +581,7 @@ app.post('/api/admin/media/remove', authenticateAdmin, async (req, res) => {
             });
         }
         
-        const settingsRepo = new SettingsRepository();
+        const settingsRepo = new SupabaseSettingsRepository();
         
         // Ayarı temizle
         await settingsRepo.updateByKey(targetField, '');
@@ -622,8 +625,9 @@ app.get('/api/health', async (req, res) => {
 // Environment variables test endpoint
 app.get('/api/test/env', (req, res) => {
     const envVars = {
-        // MongoDB
-        MONGODB_URI: process.env.MONGODB_URI ? 'VAR' : 'YOK',
+        // Supabase
+        SUPABASE_URL: process.env.SUPABASE_URL ? 'VAR' : 'YOK',
+        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ? 'VAR' : 'YOK',
         
         // JWT
         JWT_SECRET: process.env.JWT_SECRET ? 'VAR' : 'YOK',
@@ -640,11 +644,9 @@ app.get('/api/test/env', (req, res) => {
     
     // Placeholder kontrolü
     const placeholderChecks = {
-        mongodb_placeholder: process.env.MONGODB_URI && (
-            process.env.MONGODB_URI.includes('your_username') ||
-            process.env.MONGODB_URI.includes('your_password') ||
-            process.env.MONGODB_URI.includes('your_cluster') ||
-            process.env.MONGODB_URI.includes('your_mongodb_connection_string')
+        supabase_placeholder: (
+            process.env.SUPABASE_URL === 'your_supabase_url' ||
+            process.env.SUPABASE_ANON_KEY === 'your_supabase_anon_key'
         ),
         cloudinary_placeholder: (
             process.env.CLOUDINARY_CLOUD_NAME === 'your_cloud_name' ||
@@ -653,7 +655,8 @@ app.get('/api/test/env', (req, res) => {
         )
     };
     
-    const hasAllRequiredVars = envVars.MONGODB_URI === 'VAR' && 
+    const hasAllRequiredVars = envVars.SUPABASE_URL === 'VAR' && 
+                              envVars.SUPABASE_ANON_KEY === 'VAR' &&
                               envVars.JWT_SECRET === 'VAR' && 
                               envVars.ADMIN_EMAIL === 'VAR' && 
                               envVars.ADMIN_PASSWORD === 'VAR' &&
@@ -661,7 +664,7 @@ app.get('/api/test/env', (req, res) => {
                               envVars.CLOUDINARY_API_KEY === 'VAR' &&
                               envVars.CLOUDINARY_API_SECRET === 'VAR';
     
-    const hasPlaceholders = placeholderChecks.mongodb_placeholder || placeholderChecks.cloudinary_placeholder;
+    const hasPlaceholders = placeholderChecks.supabase_placeholder || placeholderChecks.cloudinary_placeholder;
     
     res.json({
         success: hasAllRequiredVars && !hasPlaceholders,
@@ -701,39 +704,7 @@ app.get('/api/test/cloudinary-env', (req, res) => {
     });
 });
 
-// MongoDB connection test endpoint
-app.get('/api/test/mongodb', async (req, res) => {
-    try {
-        const connectionStatus = databaseConnection.getConnectionStatus();
-        const mongoUri = process.env.MONGODB_URI ? 'VAR' : 'YOK';
-        const mongoUriPreview = process.env.MONGODB_URI ? 
-            process.env.MONGODB_URI.substring(0, 50) + '...' : 'YOK';
-        
-        // Health check yap
-        const healthCheck = await databaseConnection.healthCheck();
-        
-        res.json({
-            success: connectionStatus.isConnected,
-            mongodb_connection: connectionStatus.isConnected ? 'BAĞLI' : 'BAĞLANTI YOK',
-            mongodb_uri: mongoUri,
-            mongodb_uri_preview: mongoUriPreview,
-            connection_error: connectionStatus.error,
-            health_status: healthCheck.status,
-            health_error: healthCheck.error,
-            message: connectionStatus.isConnected ? 
-                'MongoDB bağlantısı aktif ve sağlıklı' : 
-                connectionStatus.error ? 
-                    `MongoDB bağlantı hatası: ${connectionStatus.error}` :
-                    'MongoDB bağlantısı yok - MONGODB_URI kontrol edin'
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: error.message,
-            message: 'MongoDB test hatası'
-        });
-    }
-});
+
 
 // Admin API Routes
 
@@ -745,14 +716,27 @@ app.post('/api/admin/login', async (req, res) => {
         console.log('Request body:', req.body);
         
         // Environment variables kontrolü
-        const jwtSecret = process.env.JWT_SECRET || 'bismil-vinc-fallback-secret-2024';
-        const defaultAdminEmail = process.env.ADMIN_EMAIL || 'admin@bismilvinc.com';
-        const defaultAdminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+        const jwtSecret = process.env.JWT_SECRET;
+        const adminEmail = process.env.ADMIN_EMAIL;
+        const adminPassword = process.env.ADMIN_PASSWORD;
+        
+        // Environment variables kontrolü
+        if (!jwtSecret || !adminEmail || !adminPassword) {
+            console.log('Eksik environment variables:', {
+                JWT_SECRET: jwtSecret ? 'VAR' : 'YOK',
+                ADMIN_EMAIL: adminEmail ? 'VAR' : 'YOK',
+                ADMIN_PASSWORD: adminPassword ? 'VAR' : 'YOK'
+            });
+            return res.status(500).json({
+                success: false,
+                message: 'Sunucu yapılandırma hatası - Environment variables eksik'
+            });
+        }
         
         console.log('Environment variables:', {
-            JWT_SECRET: process.env.JWT_SECRET ? 'VAR' : 'YOK (fallback kullanılıyor)',
-            ADMIN_EMAIL: defaultAdminEmail,
-            ADMIN_PASSWORD: defaultAdminPassword ? 'VAR' : 'YOK',
+            JWT_SECRET: jwtSecret ? 'VAR' : 'YOK',
+            ADMIN_EMAIL: adminEmail ? 'VAR' : 'YOK',
+            ADMIN_PASSWORD: adminPassword ? 'VAR' : 'YOK',
             NODE_ENV: process.env.NODE_ENV
         });
         
@@ -761,8 +745,8 @@ app.post('/api/admin/login', async (req, res) => {
         console.log('Login bilgileri:', { 
             email, 
             password: password ? '***' : 'boş',
-            expectedEmail: defaultAdminEmail,
-            emailMatch: email === defaultAdminEmail
+            expectedEmail: adminEmail,
+            emailMatch: email === adminEmail
         });
 
         if (!email || !password) {
@@ -773,24 +757,24 @@ app.post('/api/admin/login', async (req, res) => {
             });
         }
 
-        // MongoDB bağlantısı kontrolü
-        const isDbConnected = databaseConnection.isConnected;
-        console.log('MongoDB bağlantı durumu:', isDbConnected ? 'BAĞLI' : 'BAĞLI DEĞİL');
+        // Supabase bağlantısı kontrolü
+        const isDbConnected = supabaseConnection.isConnected;
+        console.log('Supabase bağlantı durumu:', isDbConnected ? 'BAĞLI' : 'BAĞLI DEĞİL');
 
         if (!isDbConnected) {
-            console.log('MongoDB bağlantısı yok, hardcoded admin kontrolü yapılıyor');
+            console.log('Supabase bağlantısı yok, hardcoded admin kontrolü yapılıyor');
             
             console.log('Beklenen admin bilgileri:', { 
-                email: defaultAdminEmail, 
-                password: defaultAdminPassword ? '***' : 'boş' 
+                email: adminEmail, 
+                password: adminPassword ? '***' : 'boş' 
             });
             
             console.log('Karşılaştırma:', {
-                emailMatch: email === defaultAdminEmail,
-                passwordMatch: password === defaultAdminPassword
+                emailMatch: email === adminEmail,
+                passwordMatch: password === adminPassword
             });
             
-            if (email === defaultAdminEmail && password === defaultAdminPassword) {
+            if (email === adminEmail && password === adminPassword) {
                 console.log('Hardcoded admin girişi başarılı');
                 
                 // Generate JWT token
@@ -822,7 +806,7 @@ app.post('/api/admin/login', async (req, res) => {
             } else {
                 console.log('Hardcoded admin bilgileri eşleşmedi');
                 console.log('Girilen:', { email, password: '***' });
-                console.log('Beklenen:', { email: defaultAdminEmail, password: '***' });
+                console.log('Beklenen:', { email: adminEmail, password: '***' });
                 return res.status(401).json({
                     success: false,
                     message: 'Geçersiz e-posta veya şifre'
@@ -830,8 +814,8 @@ app.post('/api/admin/login', async (req, res) => {
             }
         }
 
-        // MongoDB bağlantısı varsa normal akış
-        console.log('MongoDB bağlantısı var, veritabanından kullanıcı aranıyor');
+        // Supabase bağlantısı varsa normal akış
+        console.log('Supabase bağlantısı var, veritabanından kullanıcı aranıyor');
         const userRepo = new UserRepository();
         console.log('Kullanıcı aranıyor:', email);
         
@@ -937,9 +921,9 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
     try {
         console.log('Admin stats isteği alındı');
         
-        // MongoDB bağlantısı kontrolü
-        if (!databaseConnection.isConnected) {
-            console.log('MongoDB bağlantısı yok, fallback stats döndürülüyor');
+        // Supabase bağlantısı kontrolü
+        if (!supabaseConnection.isConnected) {
+            console.log('Supabase bağlantısı yok, fallback stats döndürülüyor');
             return res.json({
                 services: 4,
                 contacts: 0,
@@ -948,12 +932,12 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
             });
         }
 
-        const contactRepo = new ContactRepository();
-        const settingsRepo = new SettingsRepository();
+        const contactRepo = new SupabaseContactRepository();
+        const settingsRepo = new SupabaseSettingsRepository();
 
         const [contacts, settings] = await Promise.all([
-            contactRepo.getStats(),
-            settingsRepo.getAll()
+            contactRepo.findAll(),
+            settingsRepo.findAll()
         ]);
 
         const stats = {
@@ -983,15 +967,17 @@ app.get('/api/admin/contacts/recent', authenticateAdmin, async (req, res) => {
     try {
         console.log('=== ADMIN RECENT CONTACTS BAŞLADI ===');
         
-        if (!databaseConnection.isConnected) {
-            console.log('MongoDB bağlantısı yok, boş son iletişim listesi döndürülüyor');
+        if (!supabaseConnection.isConnected) {
+            console.log('Supabase bağlantısı yok, boş son iletişim listesi döndürülüyor');
             return res.json([]);
         }
         
-        const contactRepo = new ContactRepository();
-        const contacts = await contactRepo.getRecentContacts(5);
-        console.log('Son iletişimler başarıyla yüklendi:', contacts.length);
-        res.json(contacts);
+        const contactRepo = new SupabaseContactRepository();
+        const contacts = await contactRepo.findAll();
+        // Son 5 iletişimi al
+        const recentContacts = contacts.slice(0, 5);
+        console.log('Son iletişimler başarıyla yüklendi:', recentContacts.length);
+        res.json(recentContacts);
     } catch (error) {
         console.error('Son iletişimler hatası:', error);
         res.status(500).json({
@@ -1006,12 +992,12 @@ app.get('/api/admin/contacts', authenticateAdmin, async (req, res) => {
     try {
         console.log('=== ADMIN CONTACTS BAŞLADI ===');
         
-        if (!databaseConnection.isConnected) {
-            console.log('MongoDB bağlantısı yok, boş iletişim listesi döndürülüyor');
+        if (!supabaseConnection.isConnected) {
+            console.log('Supabase bağlantısı yok, boş iletişim listesi döndürülüyor');
             return res.json([]);
         }
         
-        const contactRepo = new ContactRepository();
+        const contactRepo = new SupabaseContactRepository();
         const contacts = await contactRepo.findAll();
         console.log('İletişimler başarıyla yüklendi:', contacts.length);
         res.json(contacts);
@@ -1029,8 +1015,8 @@ app.get('/api/admin/settings', authenticateAdmin, async (req, res) => {
     try {
         console.log('=== ADMIN SETTINGS BAŞLADI ===');
         
-        if (!databaseConnection.isConnected) {
-            console.log('MongoDB bağlantısı yok, hardcoded ayarlar döndürülüyor');
+        if (!supabaseConnection.isConnected) {
+            console.log('Supabase bağlantısı yok, hardcoded ayarlar döndürülüyor');
             const hardcodedSettings = {
                 site_title: 'Bismil Vinç - Diyarbakır Mobil Vinç Hizmetleri',
                 site_description: 'Diyarbakır\'da 16 yıllık deneyimle profesyonel mobil vinç kiralama ve şantiye kaldırma hizmetleri',
@@ -1053,7 +1039,7 @@ app.get('/api/admin/settings', authenticateAdmin, async (req, res) => {
             return res.json(hardcodedSettings);
         }
         
-        const settingsRepo = new SettingsRepository();
+        const settingsRepo = new SupabaseSettingsRepository();
         const settings = await settingsRepo.getSettingsAsObject();
         console.log('Ayarlar başarıyla yüklendi');
         res.json(settings);
@@ -1069,7 +1055,7 @@ app.get('/api/admin/settings', authenticateAdmin, async (req, res) => {
 app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
     try {
         const { siteTitle, siteDescription, phoneNumber, emailAddress, address } = req.body;
-        const settingsRepo = new SettingsRepository();
+        const settingsRepo = new SupabaseSettingsRepository();
 
         const updates = [
             { key: 'site_title', value: siteTitle },
@@ -1097,7 +1083,7 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
 // Admin Settings Update
 app.post('/api/admin/settings/update', authenticateAdmin, async (req, res) => {
     try {
-        const settingsRepo = new SettingsRepository();
+        const settingsRepo = new SupabaseSettingsRepository();
         const updates = req.body;
         
         // Her ayarı güncelle
@@ -1123,7 +1109,7 @@ app.post('/api/admin/settings/update', authenticateAdmin, async (req, res) => {
 app.post('/api/admin/theme', authenticateAdmin, async (req, res) => {
     try {
         const { primaryColor, primaryDark, backgroundColor, fontFamily } = req.body;
-        const settingsRepo = new SettingsRepository();
+        const settingsRepo = new SupabaseSettingsRepository();
 
         const updates = [
             { key: 'primary_color', value: primaryColor },
@@ -1152,8 +1138,8 @@ app.get('/api/admin/services', authenticateAdmin, async (req, res) => {
     try {
         console.log('=== ADMIN SERVICES BAŞLADI ===');
         
-        if (!databaseConnection.isConnected) {
-            console.log('MongoDB bağlantısı yok, hardcoded hizmetler döndürülüyor');
+        if (!supabaseConnection.isConnected) {
+            console.log('Supabase bağlantısı yok, hardcoded hizmetler döndürülüyor');
             const hardcodedServices = [
                 {
                     _id: '1',
@@ -1267,7 +1253,7 @@ app.post('/api/admin/services', authenticateAdmin, async (req, res) => {
         
         // Eğer görsel URL'si varsa, settings'e kaydet
         if (imageUrl && service.slug) {
-            const settingsRepo = new SettingsRepository();
+            const settingsRepo = new SupabaseSettingsRepository();
             const settingKey = `service_${service.slug}_img`;
             await settingsRepo.updateByKey(settingKey, imageUrl);
             console.log('Hizmet görseli settings\'e kaydedildi:', settingKey, imageUrl);
@@ -1334,7 +1320,7 @@ app.put('/api/admin/services/:id', authenticateAdmin, async (req, res) => {
         
         // Eğer görsel URL'si varsa, settings'e kaydet
         if (imageUrl && slug) {
-            const settingsRepo = new SettingsRepository();
+            const settingsRepo = new SupabaseSettingsRepository();
             const settingKey = `service_${slug}_img`;
             await settingsRepo.updateByKey(settingKey, imageUrl);
             console.log('Hizmet görseli settings\'e kaydedildi:', settingKey, imageUrl);
@@ -1391,7 +1377,7 @@ app.delete('/api/admin/services/:id', authenticateAdmin, async (req, res) => {
 app.post('/api/admin/pages/update', authenticateAdmin, async (req, res) => {
     try {
         const { pageType, data } = req.body;
-        const settingsRepo = new SettingsRepository();
+        const settingsRepo = new SupabaseSettingsRepository();
         
         // Sayfa tipine göre ayarları güncelle
         const updates = [];
@@ -1436,7 +1422,7 @@ app.post('/api/admin/footer/update', authenticateAdmin, async (req, res) => {
         const footerData = req.body;
         console.log('Footer güncelleme isteği:', footerData);
         
-        const settingsRepo = new SettingsRepository();
+        const settingsRepo = new SupabaseSettingsRepository();
         
         // Footer ayarlarını güncelle
         const updatePromises = Object.keys(footerData).map(key => 
@@ -1458,8 +1444,8 @@ app.get('/api/admin/footer', authenticateAdmin, async (req, res) => {
     try {
         console.log('=== ADMIN FOOTER BAŞLADI ===');
         
-        if (!databaseConnection.isConnected) {
-            console.log('MongoDB bağlantısı yok, hardcoded footer ayarları döndürülüyor');
+        if (!supabaseConnection.isConnected) {
+            console.log('Supabase bağlantısı yok, hardcoded footer ayarları döndürülüyor');
             const hardcodedFooterSettings = {
                 footer_description: 'Diyarbakır\'da profesyonel mobil vinç ve kurulum hizmetleri',
                 footer_services_link: 'Hizmetler',
@@ -1471,7 +1457,7 @@ app.get('/api/admin/footer', authenticateAdmin, async (req, res) => {
         }
         
         console.log('Footer ayarları getirme isteği alındı');
-        const settingsRepo = new SettingsRepository();
+        const settingsRepo = new SupabaseSettingsRepository();
         const settings = await settingsRepo.getPublicSettingsAsObject();
         console.log('Tüm public ayarlar:', settings);
         
@@ -1521,84 +1507,72 @@ const startServer = async () => {
         
         // Environment variables kontrolü
         console.log('Environment variables kontrol ediliyor...');
-        console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'VAR' : 'YOK');
+        console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? 'VAR' : 'YOK');
+        console.log('SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY ? 'VAR' : 'YOK');
         console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'VAR' : 'YOK');
-        console.log('ADMIN_EMAIL:', process.env.ADMIN_EMAIL || 'admin@bismilvinc.com');
+        console.log('ADMIN_EMAIL:', process.env.ADMIN_EMAIL || 'YOK');
         console.log('ADMIN_PASSWORD:', process.env.ADMIN_PASSWORD ? 'VAR' : 'YOK');
         
-        // MongoDB bağlantısını dene
+        // Supabase bağlantısını dene
         try {
-            if (process.env.MONGODB_URI) {
-                console.log('🔗 MongoDB bağlantısı deneniyor...');
-                console.log('MONGODB_URI (ilk 50 karakter):', process.env.MONGODB_URI.substring(0, 50) + '...');
+            if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
+                console.log('🔗 Supabase bağlantısı deneniyor...');
+                console.log('SUPABASE_URL (ilk 50 karakter):', process.env.SUPABASE_URL.substring(0, 50) + '...');
                 
-                await databaseConnection.connect();
-                console.log('✅ MongoDB bağlantısı başarılı');
+                await supabaseConnection.connect();
+                console.log('✅ Supabase bağlantısı başarılı');
             } else {
-                console.log('⚠️ MONGODB_URI environment variable eksik');
-                console.log('📝 Uygulama MongoDB olmadan çalışacak');
+                console.log('⚠️ SUPABASE_URL veya SUPABASE_ANON_KEY environment variable eksik');
+                console.log('📝 Uygulama Supabase olmadan çalışacak');
             }
         } catch (dbError) {
-            console.error('❌ MongoDB bağlantısı başarısız:', dbError.message);
-            console.log('📝 Uygulama MongoDB olmadan çalışmaya devam edecek');
+            console.error('❌ Supabase bağlantısı başarısız:', dbError.message);
+            console.log('📝 Uygulama Supabase olmadan çalışmaya devam edecek');
         }
 
-        // Mongoose bağlantısını dene (sadece MongoDB bağlantısı başarılıysa)
-        try {
-            if (databaseConnection.isConnected && process.env.MONGODB_URI) {
-                await mongooseConnection.connect();
-                console.log('✅ Mongoose bağlantısı başarılı');
-            } else {
-                console.log('⚠️ Mongoose bağlantısı atlandı - MongoDB bağlantısı yok');
-            }
-        } catch (mongooseError) {
-            console.warn('⚠️ Mongoose bağlantısı başarısız:', mongooseError.message);
-            console.log('📝 Uygulama Mongoose olmadan çalışmaya devam edecek');
-        }
-
-        // Default admin kullanıcısını oluştur (sadece MongoDB bağlıysa)
-        if (databaseConnection.isConnected) {
+        // Default admin kullanıcısını oluştur (sadece Supabase bağlıysa)
+        if (supabaseConnection.isConnected) {
             try {
-                const userRepo = new UserRepository();
+                const userRepo = new SupabaseUserRepository();
                 await userRepo.initializeDefaultAdmin();
                 console.log('✅ Default admin kullanıcısı kontrol edildi');
             } catch (adminError) {
                 console.warn('⚠️ Default admin oluşturulamadı:', adminError.message);
             }
         } else {
-            console.log('📝 Default admin oluşturma atlandı - MongoDB bağlı değil');
+            console.log('📝 Default admin oluşturma atlandı - Supabase bağlı değil');
         }
 
-        // Default ayarları oluştur (sadece MongoDB bağlıysa)
-        if (databaseConnection.isConnected) {
+        // Default ayarları oluştur (sadece Supabase bağlıysa)
+        if (supabaseConnection.isConnected) {
             try {
-                const settingsRepo = new SettingsRepository();
+                const settingsRepo = new SupabaseSettingsRepository();
                 await settingsRepo.initializeDefaultSettings();
                 console.log('✅ Default ayarlar kontrol edildi');
             } catch (settingsError) {
                 console.warn('⚠️ Default ayarlar oluşturulamadı:', settingsError.message);
             }
         } else {
-            console.log('📝 Default ayarlar oluşturma atlandı - MongoDB bağlı değil');
+            console.log('📝 Default ayarlar oluşturma atlandı - Supabase bağlı değil');
         }
 
-        // Varsayılan hizmetleri oluştur (sadece MongoDB bağlıysa)
-        if (databaseConnection.isConnected) {
+        // Varsayılan hizmetleri oluştur (sadece Supabase bağlıysa)
+        if (supabaseConnection.isConnected) {
             try {
-                const serviceRepo = new ServiceRepository();
+                const serviceRepo = new SupabaseServiceRepository();
                 await serviceRepo.initializeDefaultServices();
                 console.log('✅ Varsayılan hizmetler oluşturuldu');
             } catch (serviceError) {
                 console.warn('⚠️ Hizmetler oluşturulamadı, devam ediliyor:', serviceError.message);
             }
         } else {
-            console.log('📝 Varsayılan hizmetler oluşturma atlandı - MongoDB bağlı değil');
+            console.log('📝 Varsayılan hizmetler oluşturma atlandı - Supabase bağlı değil');
         }
 
         console.log('✅ Sunucu başlatma tamamlandı');
         console.log('📝 Admin giriş bilgileri:');
-        console.log('   E-posta:', process.env.ADMIN_EMAIL || 'admin@bismilvinc.com');
-        console.log('   Şifre:', process.env.ADMIN_PASSWORD || 'admin123');
+        console.log('   E-posta:', process.env.ADMIN_EMAIL || 'YOK');
+        console.log('   Şifre:', process.env.ADMIN_PASSWORD || 'YOK');
         console.log(`📱 Environment: ${process.env.NODE_ENV}`);
     } catch (error) {
         console.error('❌ Sunucu başlatma hatası:', error);
@@ -1662,12 +1636,12 @@ module.exports = app;
 // Graceful shutdown
 process.on('SIGTERM', async () => {
     console.log('🛑 Server kapatılıyor...');
-    await mongooseConnection.disconnect();
+    await supabaseConnection.disconnect();
     process.exit(0);
 });
 
 process.on('SIGINT', async () => {
     console.log('🛑 Server kapatılıyor...');
-    await mongooseConnection.disconnect();
+    await supabaseConnection.disconnect();
     process.exit(0);
 });

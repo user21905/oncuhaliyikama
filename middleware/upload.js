@@ -1,15 +1,15 @@
 const multer = require('multer');
 const cloudinaryService = require('../services/cloudinary');
-const SettingsRepository = require('../database/repositories/SettingsRepository');
+const SupabaseSettingsRepository = require('../database/repositories/SupabaseSettingsRepository');
 
 // Multer konfigürasyonu - geçici dosya yükleme
 const storage = multer.memoryStorage();
 
 const fileFilter = async (req, file, cb) => {
     try {
-        const settingsRepo = new SettingsRepository();
-        const allowedFormats = await settingsRepo.getByKey('cloudinary_allowed_formats');
-        const maxFileSize = await settingsRepo.getByKey('cloudinary_max_file_size');
+        const settingsRepo = new SupabaseSettingsRepository();
+        const allowedFormats = await settingsRepo.findByKey('cloudinary_allowed_formats');
+        const maxFileSize = await settingsRepo.findByKey('cloudinary_max_file_size');
         
         const formats = allowedFormats ? allowedFormats.value : ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx'];
         const maxSize = maxFileSize ? maxFileSize.value : 10485760; // 10MB default
@@ -60,8 +60,8 @@ const uploadToCloudinary = async (req, res, next) => {
             });
         }
 
-        const settingsRepo = new SettingsRepository();
-        const folder = await settingsRepo.getByKey('cloudinary_folder');
+        const settingsRepo = new SupabaseSettingsRepository();
+        const folder = await settingsRepo.findByKey('cloudinary_folder');
         const folderName = folder ? folder.value : 'bismilvinc';
 
         if (req.file) {
@@ -123,8 +123,8 @@ const uploadBase64 = async (req, res, next) => {
             });
         }
 
-        const settingsRepo = new SettingsRepository();
-        const defaultFolder = await settingsRepo.getByKey('cloudinary_folder');
+        const settingsRepo = new SupabaseSettingsRepository();
+        const defaultFolder = await settingsRepo.findByKey('cloudinary_folder');
         const uploadFolder = folder || (defaultFolder ? defaultFolder.value : 'bismilvinc');
 
         const result = await cloudinaryService.uploadBase64(base64Data, {

@@ -1106,7 +1106,7 @@ class AdminPanel {
                             } else {
                                 errorMessage = '❌ Cloudinary hatası: ' + data.error;
                             }
-                        } else if (data.error.includes('MongoDB')) {
+                        } else if (data.error.includes('Supabase')) {
                             errorMessage = '⚠️ Veritabanı hatası: ' + data.error;
                         } else if (data.error.includes('environment variables')) {
                             errorMessage = '❌ ' + data.error;
