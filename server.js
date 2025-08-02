@@ -181,7 +181,7 @@ const authenticateAdmin = async (req, res, next) => {
         }
 
         // Supabase bağlantısı varsa normal akış
-        const userRepo = new UserRepository();
+        const userRepo = new SupabaseUserRepository();
         const user = await userRepo.findById(decoded.userId);
 
         if (!user || user.role !== 'admin') {
@@ -816,7 +816,7 @@ app.post('/api/admin/login', async (req, res) => {
 
         // Supabase bağlantısı varsa normal akış
         console.log('Supabase bağlantısı var, veritabanından kullanıcı aranıyor');
-        const userRepo = new UserRepository();
+        const userRepo = new SupabaseUserRepository();
         console.log('Kullanıcı aranıyor:', email);
         
         const user = await userRepo.findByEmail(email);
@@ -849,7 +849,7 @@ app.post('/api/admin/login', async (req, res) => {
 
         // Update last login
         try {
-            await userRepo.update(user._id, { lastLogin: new Date() });
+            await userRepo.update(user.id, { lastLogin: new Date() });
             console.log('Son giriş tarihi güncellendi');
         } catch (updateError) {
             console.warn('Son giriş tarihi güncellenemedi:', updateError.message);
@@ -858,7 +858,7 @@ app.post('/api/admin/login', async (req, res) => {
         // Generate JWT token
         console.log('JWT token oluşturuluyor...');
         const token = jwt.sign(
-            { userId: user._id, email: user.email, role: user.role },
+            { userId: user.id, email: user.email, role: user.role },
             jwtSecret,
             { expiresIn: '24h' }
         );
@@ -872,7 +872,7 @@ app.post('/api/admin/login', async (req, res) => {
             message: 'Giriş başarılı',
             token,
             user: {
-                id: user._id,
+                id: user.id,
                 name: user.name,
                 email: user.email,
                 role: user.role
@@ -901,7 +901,7 @@ app.get('/api/admin/validate', authenticateAdmin, async (req, res) => {
             success: true,
             message: 'Token geçerli',
             user: {
-                id: req.user._id,
+                id: req.user.id,
                 name: req.user.name,
                 email: req.user.email,
                 role: req.user.role
