@@ -71,10 +71,14 @@ class DatabaseConnection {
                 retryWrites: true,
                 w: 'majority',
                 maxPoolSize: 10,
-                serverSelectionTimeoutMS: 10000,
+                serverSelectionTimeoutMS: 30000,
                 socketTimeoutMS: 45000,
-                connectTimeoutMS: 10000,
+                connectTimeoutMS: 30000,
                 heartbeatFrequencyMS: 10000,
+                ssl: true,
+                sslValidate: true,
+                useUnifiedTopology: true,
+                useNewUrlParser: true,
             };
 
             this.client = new MongoClient(uri, options);
