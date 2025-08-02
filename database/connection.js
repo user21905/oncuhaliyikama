@@ -6,35 +6,121 @@ class DatabaseConnection {
         this.client = null;
         this.db = null;
         this.isConnected = false;
+        this.connectionError = null;
+    }
+
+    /**
+     * MongoDB URI'sini validate et
+     */
+    validateMongoUri(uri) {
+        if (!uri) {
+            throw new Error('MONGODB_URI environment variable eksik');
+        }
+
+        // Placeholder değerleri kontrol et
+        const placeholderPatterns = [
+            'your_username',
+            'your_password', 
+            'your_cluster',
+            'your_mongodb_connection_string',
+            'your_database_name'
+        ];
+
+        for (const pattern of placeholderPatterns) {
+            if (uri.includes(pattern)) {
+                throw new Error(`MONGODB_URI placeholder değer içeriyor: ${pattern}. Lütfen gerçek MongoDB bilgilerinizi girin.`);
+            }
+        }
+
+        // URI formatını kontrol et
+        if (!uri.startsWith('mongodb://') && !uri.startsWith('mongodb+srv://')) {
+            throw new Error('MONGODB_URI geçersiz format. mongodb:// veya mongodb+srv:// ile başlamalı.');
+        }
+
+        return true;
     }
 
     async connect() {
         try {
             if (this.isConnected) {
+                console.log('✅ MongoDB zaten bağlı');
                 return this.db;
             }
 
             const uri = process.env.MONGODB_URI;
+            
+            // URI'yi validate et
+            this.validateMongoUri(uri);
+            
+            console.log('🔗 MongoDB bağlantısı kuruluyor...');
+            console.log('URI formatı:', uri.startsWith('mongodb+srv://') ? 'MongoDB Atlas' : 'MongoDB Local');
+            
             const options = {
-                retryWrites: process.env.MONGODB_OPTIONS_RETRY_WRITES === 'true',
-                w: process.env.MONGODB_OPTIONS_W || 'majority',
-                maxPoolSize: parseInt(process.env.MONGODB_OPTIONS_MAX_POOL_SIZE) || 10,
-                serverSelectionTimeoutMS: parseInt(process.env.MONGODB_OPTIONS_SERVER_SELECTION_TIMEOUT_MS) || 5000,
-                socketTimeoutMS: parseInt(process.env.MONGODB_OPTIONS_SOCKET_TIMEOUT_MS) || 45000,
+                retryWrites: true,
+                w: 'majority',
+                maxPoolSize: 10,
+                serverSelectionTimeoutMS: 10000,
+                socketTimeoutMS: 45000,
+                connectTimeoutMS: 10000,
+                heartbeatFrequencyMS: 10000,
             };
 
             this.client = new MongoClient(uri, options);
+            
+            // Bağlantıyı test et
             await this.client.connect();
             
-            this.db = this.client.db(process.env.MONGODB_DB_NAME);
+            // Database adını URI'den çıkar veya varsayılan kullan
+            const dbName = this.extractDatabaseName(uri) || 'bismilvinc';
+            this.db = this.client.db(dbName);
+            
+            // Bağlantıyı test et
+            await this.db.admin().ping();
+            
             this.isConnected = true;
+            this.connectionError = null;
             
             console.log('✅ MongoDB bağlantısı başarılı');
+            console.log(`📊 Database: ${dbName}`);
             return this.db;
+            
         } catch (error) {
-            console.error('❌ MongoDB bağlantı hatası:', error);
-            throw error;
+            this.connectionError = error;
+            console.error('❌ MongoDB bağlantı hatası:', error.message);
+            
+            // Daha detaylı hata mesajları
+            let userFriendlyError = 'MongoDB bağlantı hatası';
+            
+            if (error.message.includes('ENOTFOUND')) {
+                userFriendlyError = 'MongoDB sunucusu bulunamadı. Cluster adını kontrol edin.';
+            } else if (error.message.includes('Authentication failed')) {
+                userFriendlyError = 'MongoDB kimlik doğrulama hatası. Kullanıcı adı ve şifreyi kontrol edin.';
+            } else if (error.message.includes('ECONNREFUSED')) {
+                userFriendlyError = 'MongoDB sunucusuna bağlanılamıyor. Sunucu çalışıyor mu?';
+            } else if (error.message.includes('ETIMEDOUT')) {
+                userFriendlyError = 'MongoDB bağlantı zaman aşımı. İnternet bağlantınızı kontrol edin.';
+            } else if (error.message.includes('placeholder')) {
+                userFriendlyError = error.message;
+            }
+            
+            throw new Error(userFriendlyError);
         }
+    }
+
+    /**
+     * URI'den database adını çıkar
+     */
+    extractDatabaseName(uri) {
+        try {
+            const url = new URL(uri);
+            const pathname = url.pathname;
+            if (pathname && pathname !== '/') {
+                return pathname.substring(1); // Başındaki / işaretini kaldır
+            }
+        } catch (error) {
+            // URL parse hatası - varsayılan database adını kullan
+        }
+        return 'bismilvinc';
     }
 
     async disconnect() {
@@ -42,6 +128,7 @@ class DatabaseConnection {
             if (this.client) {
                 await this.client.close();
                 this.isConnected = false;
+                this.connectionError = null;
                 console.log('🔌 MongoDB bağlantısı kapatıldı');
             }
         } catch (error) {
@@ -65,12 +152,36 @@ class DatabaseConnection {
     // Health check
     async healthCheck() {
         try {
+            if (!this.isConnected) {
+                return { 
+                    status: 'disconnected', 
+                    error: 'MongoDB bağlantısı yok',
+                    timestamp: new Date() 
+                };
+            }
+            
             const db = this.getDb();
             await db.admin().ping();
-            return { status: 'healthy', timestamp: new Date() };
+            return { 
+                status: 'healthy', 
+                timestamp: new Date() 
+            };
         } catch (error) {
-            return { status: 'unhealthy', error: error.message, timestamp: new Date() };
+            return { 
+                status: 'unhealthy', 
+                error: error.message, 
+                timestamp: new Date() 
+            };
         }
+    }
+
+    // Bağlantı durumunu kontrol et
+    getConnectionStatus() {
+        return {
+            isConnected: this.isConnected,
+            error: this.connectionError ? this.connectionError.message : null,
+            timestamp: new Date()
+        };
     }
 }
 

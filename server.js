@@ -618,6 +618,63 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
+// Environment variables test endpoint
+app.get('/api/test/env', (req, res) => {
+    const envVars = {
+        // MongoDB
+        MONGODB_URI: process.env.MONGODB_URI ? 'VAR' : 'YOK',
+        
+        // JWT
+        JWT_SECRET: process.env.JWT_SECRET ? 'VAR' : 'YOK',
+        
+        // Admin
+        ADMIN_EMAIL: process.env.ADMIN_EMAIL ? 'VAR' : 'YOK',
+        ADMIN_PASSWORD: process.env.ADMIN_PASSWORD ? 'VAR' : 'YOK',
+        
+        // Cloudinary
+        CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME ? 'VAR' : 'YOK',
+        CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY ? 'VAR' : 'YOK',
+        CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET ? 'VAR' : 'YOK'
+    };
+    
+    // Placeholder kontrolü
+    const placeholderChecks = {
+        mongodb_placeholder: process.env.MONGODB_URI && (
+            process.env.MONGODB_URI.includes('your_username') ||
+            process.env.MONGODB_URI.includes('your_password') ||
+            process.env.MONGODB_URI.includes('your_cluster') ||
+            process.env.MONGODB_URI.includes('your_mongodb_connection_string')
+        ),
+        cloudinary_placeholder: (
+            process.env.CLOUDINARY_CLOUD_NAME === 'your_cloud_name' ||
+            process.env.CLOUDINARY_API_KEY === 'your_api_key' ||
+            process.env.CLOUDINARY_API_SECRET === 'your_api_secret'
+        )
+    };
+    
+    const hasAllRequiredVars = envVars.MONGODB_URI === 'VAR' && 
+                              envVars.JWT_SECRET === 'VAR' && 
+                              envVars.ADMIN_EMAIL === 'VAR' && 
+                              envVars.ADMIN_PASSWORD === 'VAR' &&
+                              envVars.CLOUDINARY_CLOUD_NAME === 'VAR' &&
+                              envVars.CLOUDINARY_API_KEY === 'VAR' &&
+                              envVars.CLOUDINARY_API_SECRET === 'VAR';
+    
+    const hasPlaceholders = placeholderChecks.mongodb_placeholder || placeholderChecks.cloudinary_placeholder;
+    
+    res.json({
+        success: hasAllRequiredVars && !hasPlaceholders,
+        environment_variables: envVars,
+        placeholder_checks: placeholderChecks,
+        has_placeholders: hasPlaceholders,
+        message: hasAllRequiredVars && !hasPlaceholders ? 
+            'Tüm environment variables doğru' : 
+            hasPlaceholders ? 
+                'Environment variables placeholder değerler içeriyor' :
+                'Bazı environment variables eksik'
+    });
+});
+
 // Cloudinary environment variables test endpoint
 app.get('/api/test/cloudinary-env', (req, res) => {
     const cloudinaryVars = {
@@ -646,35 +703,26 @@ app.get('/api/test/cloudinary-env', (req, res) => {
 // MongoDB connection test endpoint
 app.get('/api/test/mongodb', async (req, res) => {
     try {
-        const isConnected = databaseConnection.isConnected;
+        const connectionStatus = databaseConnection.getConnectionStatus();
         const mongoUri = process.env.MONGODB_URI ? 'VAR' : 'YOK';
         const mongoUriPreview = process.env.MONGODB_URI ? 
             process.env.MONGODB_URI.substring(0, 50) + '...' : 'YOK';
         
-        // Bağlantıyı tekrar dene
-        let connectionTest = 'BAĞLANTI YOK';
-        let connectionError = null;
-        
-        if (process.env.MONGODB_URI && process.env.MONGODB_URI !== 'your_mongodb_connection_string') {
-            try {
-                await databaseConnection.connect();
-                connectionTest = 'BAĞLI';
-            } catch (connectError) {
-                connectionError = connectError.message;
-                connectionTest = 'BAĞLANTI HATASI';
-            }
-        }
+        // Health check yap
+        const healthCheck = await databaseConnection.healthCheck();
         
         res.json({
-            success: isConnected,
-            mongodb_connection: connectionTest,
+            success: connectionStatus.isConnected,
+            mongodb_connection: connectionStatus.isConnected ? 'BAĞLI' : 'BAĞLANTI YOK',
             mongodb_uri: mongoUri,
             mongodb_uri_preview: mongoUriPreview,
-            connection_error: connectionError,
-            message: isConnected ? 
-                'MongoDB bağlantısı aktif' : 
-                connectionError ? 
-                    `MongoDB bağlantı hatası: ${connectionError}` :
+            connection_error: connectionStatus.error,
+            health_status: healthCheck.status,
+            health_error: healthCheck.error,
+            message: connectionStatus.isConnected ? 
+                'MongoDB bağlantısı aktif ve sağlıklı' : 
+                connectionStatus.error ? 
+                    `MongoDB bağlantı hatası: ${connectionStatus.error}` :
                     'MongoDB bağlantısı yok - MONGODB_URI kontrol edin'
         });
     } catch (error) {
@@ -1479,18 +1527,18 @@ const startServer = async () => {
         
         // MongoDB bağlantısını dene
         try {
-            if (process.env.MONGODB_URI && process.env.MONGODB_URI !== 'your_mongodb_connection_string') {
+            if (process.env.MONGODB_URI) {
                 console.log('🔗 MongoDB bağlantısı deneniyor...');
                 console.log('MONGODB_URI (ilk 50 karakter):', process.env.MONGODB_URI.substring(0, 50) + '...');
+                
                 await databaseConnection.connect();
                 console.log('✅ MongoDB bağlantısı başarılı');
             } else {
-                console.log('⚠️ MONGODB_URI ayarlanmamış veya placeholder değer');
+                console.log('⚠️ MONGODB_URI environment variable eksik');
                 console.log('📝 Uygulama MongoDB olmadan çalışacak');
             }
         } catch (dbError) {
             console.error('❌ MongoDB bağlantısı başarısız:', dbError.message);
-            console.error('❌ MongoDB bağlantı hatası detayı:', dbError);
             console.log('📝 Uygulama MongoDB olmadan çalışmaya devam edecek');
         }
 
