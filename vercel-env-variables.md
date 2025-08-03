@@ -18,9 +18,9 @@ CLOUDINARY_API_KEY=277186752262788
 CLOUDINARY_API_SECRET=mqb09T4lY_cKDU1d1cD5esCTtPg
 ```
 
-### JWT Kimlik Doğrulama
+### JWT Kimlik Doğrulama (Supabase Auth kullanıldığı için gerekli değil)
 ```
-JWT_SECRET=FHquVHL/i9jrMQMSwrd+D2IB90qp0KQlDlPGWtzPtTQCYPjJmSkOIU3kxOF/q0j4YxrNSY4GdkqnQ6CEMgOXDw==
+# JWT_SECRET=FHquVHL/i9jrMQMSwrd+D2IB90qp0KQlDlPGWtzPtTQCYPjJmSkOIU3kxOF/q0j4YxrNSY4GdkqnQ6CEMgOXDw==
 ```
 
 ### Admin Panel Bilgileri

@@ -11,8 +11,8 @@ CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name_here
 CLOUDINARY_API_KEY=your_cloudinary_api_key_here
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret_here
 
-# JWT Authentication
-JWT_SECRET=your_jwt_secret_key_here
+# JWT Authentication (Not needed with Supabase Auth)
+# JWT_SECRET=your_jwt_secret_key_here
 
 # Admin Panel Credentials (Optional - defaults are set in server.js)
 ADMIN_EMAIL=admin@bismilvinc.com
