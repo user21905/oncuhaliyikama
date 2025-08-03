@@ -8,10 +8,10 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
-// Database bağlantısı - Hardcoded admin için gerekli değil
-// const supabaseConnection = require('./database/supabase-connection');
+// Database bağlantısı
+const supabaseConnection = require('./database/supabase-connection');
 
-// Supabase Repositories - Hardcoded admin için gerekli değil
+// Supabase Repositories
 const SupabaseContactRepository = require('./database/repositories/SupabaseContactRepository');
 const SupabaseSettingsRepository = require('./database/repositories/SupabaseSettingsRepository');
 const SupabaseUserRepository = require('./database/repositories/SupabaseUserRepository');
@@ -129,7 +129,7 @@ app.get('/favicon.ico', (req, res) => {
 // Admin klasörü için özel static servis
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 
-// Admin Authentication Middleware - Hardcoded Admin Only
+// Admin Authentication Middleware - Supabase Based
 const authenticateAdmin = async (req, res, next) => {
     try {
         console.log('=== AUTHENTICATE ADMIN BAŞLADI ===');
@@ -157,27 +157,42 @@ const authenticateAdmin = async (req, res, next) => {
             role: decoded.role
         });
 
-        // Hardcoded admin kontrolü
-        const adminEmail = process.env.ADMIN_EMAIL;
-        
-        if (!adminEmail) {
-            console.log('ADMIN_EMAIL environment variable eksik');
-            return res.status(401).json({ success: false, message: 'Sunucu yapılandırma hatası' });
-        }
-        
-        if (decoded.email === adminEmail && decoded.role === 'admin') {
-            console.log('Hardcoded admin token doğrulandı');
-            req.user = {
-                id: decoded.userId,
-                email: decoded.email,
-                role: decoded.role,
-                name: 'Admin'
-            };
-            next();
+        // Supabase'den kullanıcı bilgilerini kontrol et
+        if (!supabaseConnection.isConnected) {
+            console.log('Supabase bağlantısı yok, hardcoded admin kontrolü yapılıyor');
+            const adminEmail = process.env.ADMIN_EMAIL;
+            if (decoded.email === adminEmail && decoded.role === 'admin') {
+                req.user = {
+                    id: decoded.userId,
+                    email: decoded.email,
+                    role: decoded.role,
+                    name: 'Admin'
+                };
+                next();
+                return;
+            }
         } else {
-            console.log('Hardcoded admin token geçersiz');
-            return res.status(401).json({ success: false, message: 'Geçersiz token' });
+            try {
+                const userRepo = new SupabaseUserRepository();
+                const user = await userRepo.findById(decoded.userId);
+                
+                if (user && user.role === 'admin') {
+                    console.log('Supabase admin token doğrulandı');
+                    req.user = {
+                        id: user.id,
+                        email: user.email,
+                        role: user.role
+                    };
+                    next();
+                    return;
+                }
+            } catch (userError) {
+                console.error('Supabase kullanıcı kontrolü hatası:', userError);
+            }
         }
+        
+        console.log('Admin token geçersiz');
+        return res.status(401).json({ success: false, message: 'Geçersiz token' });
     } catch (error) {
         console.error('=== AUTHENTICATE ADMIN HATASI ===');
         console.error('Token doğrulama hatası:', error);
@@ -694,36 +709,20 @@ app.post('/api/admin/login', async (req, res) => {
         
         // Environment variables kontrolü
         const jwtSecret = process.env.JWT_SECRET;
-        const adminEmail = process.env.ADMIN_EMAIL;
-        const adminPassword = process.env.ADMIN_PASSWORD;
         
-        // Environment variables kontrolü
-        if (!jwtSecret || !adminEmail || !adminPassword) {
-            console.log('Eksik environment variables:', {
-                JWT_SECRET: jwtSecret ? 'VAR' : 'YOK',
-                ADMIN_EMAIL: adminEmail ? 'VAR' : 'YOK',
-                ADMIN_PASSWORD: adminPassword ? 'VAR' : 'YOK'
-            });
+        if (!jwtSecret) {
+            console.log('JWT_SECRET environment variable eksik');
             return res.status(500).json({
                 success: false,
-                message: 'Sunucu yapılandırma hatası - Environment variables eksik'
+                message: 'Sunucu yapılandırma hatası - JWT_SECRET eksik'
             });
         }
-        
-        console.log('Environment variables:', {
-            JWT_SECRET: jwtSecret ? 'VAR' : 'YOK',
-            ADMIN_EMAIL: adminEmail ? 'VAR' : 'YOK',
-            ADMIN_PASSWORD: adminPassword ? 'VAR' : 'YOK',
-            NODE_ENV: process.env.NODE_ENV
-        });
         
         const { email, password } = req.body;
 
         console.log('Login bilgileri:', { 
             email, 
-            password: password ? '***' : 'boş',
-            expectedEmail: adminEmail,
-            emailMatch: email === adminEmail
+            password: password ? '***' : 'boş'
         });
 
         if (!email || !password) {
@@ -734,55 +733,104 @@ app.post('/api/admin/login', async (req, res) => {
             });
         }
 
-        // Önce hardcoded admin kontrolü yap
-        console.log('Hardcoded admin kontrolü yapılıyor...');
-        console.log('Beklenen admin bilgileri:', { 
-            email: adminEmail, 
-            password: adminPassword ? '***' : 'boş' 
-        });
-        
-        console.log('Karşılaştırma:', {
-            emailMatch: email === adminEmail,
-            passwordMatch: password === adminPassword
-        });
-        
-        if (email === adminEmail && password === adminPassword) {
-            console.log('Hardcoded admin girişi başarılı');
+        // Supabase bağlantısı kontrolü
+        if (!supabaseConnection.isConnected) {
+            console.log('Supabase bağlantısı yok, hardcoded admin kontrolü yapılıyor');
             
-            // Generate JWT token
-            const token = jwt.sign(
-                { 
-                    userId: 'admin-user-id', 
-                    email: email, 
-                    role: 'admin' 
-                },
-                jwtSecret,
-                { expiresIn: '24h' }
-            );
+            const adminEmail = process.env.ADMIN_EMAIL;
+            const adminPassword = process.env.ADMIN_PASSWORD;
+            
+            if (!adminEmail || !adminPassword) {
+                console.log('Hardcoded admin bilgileri eksik');
+                return res.status(500).json({
+                    success: false,
+                    message: 'Sunucu yapılandırma hatası - Admin bilgileri eksik'
+                });
+            }
+            
+            if (email === adminEmail && password === adminPassword) {
+                console.log('Hardcoded admin girişi başarılı');
+                
+                // Generate JWT token
+                const token = jwt.sign(
+                    { 
+                        userId: 'admin-user-id', 
+                        email: email, 
+                        role: 'admin' 
+                    },
+                    jwtSecret,
+                    { expiresIn: '24h' }
+                );
 
-            console.log('Login başarılı, token oluşturuldu');
-            console.log('Token örneği:', token.substring(0, 50) + '...');
-            console.log('=== ADMIN LOGIN TAMAMLANDI ===');
-            
-            return res.json({
-                success: true,
-                message: 'Giriş başarılı',
-                token,
-                user: {
-                    id: 'admin-user-id',
-                    name: 'Admin',
-                    email: email,
-                    role: 'admin'
-                }
-            });
+                console.log('Login başarılı, token oluşturuldu');
+                console.log('=== ADMIN LOGIN TAMAMLANDI ===');
+                
+                return res.json({
+                    success: true,
+                    message: 'Giriş başarılı',
+                    token,
+                    user: {
+                        id: 'admin-user-id',
+                        email: email,
+                        role: 'admin'
+                    }
+                });
+            } else {
+                console.log('Hardcoded admin bilgileri eşleşmedi');
+                return res.status(401).json({
+                    success: false,
+                    message: 'Geçersiz e-posta veya şifre'
+                });
+            }
         } else {
-            console.log('Admin bilgileri eşleşmedi');
-            console.log('Girilen:', { email, password: '***' });
-            console.log('Beklenen:', { email: adminEmail, password: '***' });
-            return res.status(401).json({
-                success: false,
-                message: 'Geçersiz e-posta veya şifre'
-            });
+            // Supabase ile kullanıcı doğrulama
+            console.log('Supabase ile kullanıcı doğrulama yapılıyor...');
+            
+            try {
+                const userRepo = new SupabaseUserRepository();
+                const authResult = await userRepo.authenticate(email, password);
+                
+                if (authResult.success && authResult.user && authResult.user.role === 'admin') {
+                    console.log('Supabase admin girişi başarılı');
+                    
+                    // Generate JWT token
+                    const token = jwt.sign(
+                        { 
+                            userId: authResult.user.id, 
+                            email: authResult.user.email, 
+                            role: authResult.user.role 
+                        },
+                        jwtSecret,
+                        { expiresIn: '24h' }
+                    );
+
+                    console.log('Login başarılı, token oluşturuldu');
+                    console.log('=== ADMIN LOGIN TAMAMLANDI ===');
+                    
+                    return res.json({
+                        success: true,
+                        message: 'Giriş başarılı',
+                        token,
+                        user: {
+                            id: authResult.user.id,
+                            email: authResult.user.email,
+                            role: authResult.user.role
+                        }
+                    });
+                } else {
+                    console.log('Kullanıcı bulunamadı veya admin değil:', authResult.message);
+                    return res.status(401).json({
+                        success: false,
+                        message: 'Geçersiz e-posta veya şifre'
+                    });
+                }
+            } catch (authError) {
+                console.error('Supabase authentication hatası:', authError);
+                return res.status(401).json({
+                    success: false,
+                    message: 'Geçersiz e-posta veya şifre'
+                });
+            }
         }
     } catch (error) {
         console.error('=== ADMIN LOGIN HATASI ===');
@@ -822,18 +870,52 @@ app.get('/api/admin/validate', authenticateAdmin, async (req, res) => {
     }
 });
 
-// Admin Dashboard Stats - Hardcoded Admin Only
+// Admin Dashboard Stats - Supabase Based
 app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
     try {
         console.log('Admin stats isteği alındı');
         
-        // Hardcoded stats döndür
-        const stats = {
-            services: 4,
+        let stats = {
+            services: 0,
             contacts: 0,
             pageViews: 0,
             media: 0
         };
+
+        // Supabase bağlantısı kontrolü
+        if (supabaseConnection.isConnected) {
+            try {
+                // Hizmet sayısını al
+                const serviceRepo = new ServiceRepository();
+                const services = await serviceRepo.findAll();
+                stats.services = services.length;
+
+                // İletişim sayısını al
+                const contactRepo = new SupabaseContactRepository();
+                const contacts = await contactRepo.findAll();
+                stats.contacts = contacts.length;
+
+                // Medya sayısını al (settings'den)
+                const settingsRepo = new SupabaseSettingsRepository();
+                const settings = await settingsRepo.getSettingsAsObject();
+                const mediaCount = Object.keys(settings).filter(key => 
+                    key.includes('_img') || key.includes('_logo') || key.includes('_bg')
+                ).length;
+                stats.media = mediaCount;
+
+            } catch (dbError) {
+                console.error('Supabase stats hatası:', dbError);
+                // Hata durumunda fallback değerler kullan
+            }
+        } else {
+            console.log('Supabase bağlantısı yok, fallback stats döndürülüyor');
+            stats = {
+                services: 4,
+                contacts: 0,
+                pageViews: 0,
+                media: 0
+            };
+        }
 
         console.log('Stats başarıyla getirildi:', stats);
         res.json(stats);
@@ -850,14 +932,25 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
     }
 });
 
-// Recent Contacts - Hardcoded Admin Only
+// Recent Contacts - Supabase Based
 app.get('/api/admin/contacts/recent', authenticateAdmin, async (req, res) => {
     try {
         console.log('=== ADMIN RECENT CONTACTS BAŞLADI ===');
         
-        // Hardcoded boş liste döndür
-        console.log('Hardcoded admin için boş iletişim listesi döndürülüyor');
-        return res.json([]);
+        if (!supabaseConnection.isConnected) {
+            console.log('Supabase bağlantısı yok, boş iletişim listesi döndürülüyor');
+            return res.json([]);
+        }
+        
+        const contactRepo = new SupabaseContactRepository();
+        const contacts = await contactRepo.findAll();
+        
+        // Son 10 iletişimi döndür
+        const recentContacts = contacts
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            .slice(0, 10);
+        
+        console.log('Son iletişimler başarıyla yüklendi:', recentContacts.length);
         res.json(recentContacts);
     } catch (error) {
         console.error('Son iletişimler hatası:', error);
