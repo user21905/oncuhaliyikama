@@ -175,22 +175,14 @@ const authenticateAdmin = async (req, res, next) => {
                 if (user) {
                     console.log('Supabase token doğrulandı, kullanıcı:', user.email);
                     
-                    // Kullanıcının admin rolünü kontrol et
-                    const userRepo = new SupabaseUserRepository();
-                    const userData = await userRepo.findByEmail(user.email);
-                    
-                    if (userData && userData.role === 'admin') {
-                        req.user = {
-                            id: userData.id,
-                            email: userData.email,
-                            role: userData.role
-                        };
-                        next();
-                        return;
-                    } else {
-                        console.log('Kullanıcı admin değil:', user.email);
-                        return res.status(401).json({ success: false, message: 'Admin yetkisi gerekli' });
-                    }
+                    // Supabase Auth kullanıcıları admin olarak kabul ediyoruz
+                    req.user = {
+                        id: user.id,
+                        email: user.email,
+                        role: 'admin'
+                    };
+                    next();
+                    return;
                 }
             } catch (userError) {
                 console.error('Supabase kullanıcı kontrolü hatası:', userError);
@@ -796,36 +788,22 @@ app.post('/api/admin/login', async (req, res) => {
                 if (data.user) {
                     console.log('Supabase login başarılı, kullanıcı:', data.user.email);
                     
-                    // Kullanıcının admin rolünü kontrol et
-                    const userRepo = new SupabaseUserRepository();
-                    const userData = await userRepo.findByEmail(data.user.email);
+                    // Supabase access token'ı kullan
+                    const token = data.session.access_token;
                     
-                    if (userData && userData.role === 'admin') {
-                        console.log('Admin rolü doğrulandı');
-                        
-                        // Supabase access token'ı kullan
-                        const token = data.session.access_token;
-                        
-                        console.log('Login başarılı, Supabase token alındı');
-                        console.log('=== ADMIN LOGIN TAMAMLANDI ===');
-                        
-                        return res.json({
-                            success: true,
-                            message: 'Giriş başarılı',
-                            token,
-                            user: {
-                                id: userData.id,
-                                email: userData.email,
-                                role: userData.role
-                            }
-                        });
-                    } else {
-                        console.log('Kullanıcı admin değil:', data.user.email);
-                        return res.status(401).json({
-                            success: false,
-                            message: 'Admin yetkisi gerekli'
-                        });
-                    }
+                    console.log('Login başarılı, Supabase token alındı');
+                    console.log('=== ADMIN LOGIN TAMAMLANDI ===');
+                    
+                    return res.json({
+                        success: true,
+                        message: 'Giriş başarılı',
+                        token,
+                        user: {
+                            id: data.user.id,
+                            email: data.user.email,
+                            role: 'admin' // Supabase Auth kullanıcıları admin olarak kabul ediyoruz
+                        }
+                    });
                 } else {
                     console.log('Supabase login başarısız - kullanıcı bulunamadı');
                     return res.status(401).json({

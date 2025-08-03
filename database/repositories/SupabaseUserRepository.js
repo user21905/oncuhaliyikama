@@ -73,7 +73,7 @@ class SupabaseUserRepository {
                 .from(this.tableName)
                 .select('*')
                 .eq('email', email)
-                .single();
+                .maybeSingle();
 
             if (error) throw error;
             return data;
