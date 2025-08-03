@@ -1,5 +1,0 @@
-[33mb034f20[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Fix admin login flow: Update token storage to admin_token, add dashboard redirect, fix user.name reference, and add default admin credentials
-[33m600ef24[m Remove jsonwebtoken dependency as it's no longer needed
-[33ma32d104[m Full Supabase JWT migration: Replaced jsonwebtoken with Supabase SDK for authentication and token validation
-[33mfd42cbb[m Full Supabase migration: Updated authentication, login, and admin endpoints to use Supabase instead of hardcoded admin
-[33m344d6ec[m Fix ServiceRepository import to use SupabaseServiceRepository

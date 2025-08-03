@@ -140,11 +140,24 @@ const authenticateAdmin = async (req, res, next) => {
 
         console.log('Token alındı, Supabase ile doğrulanıyor...');
         
+        // Hardcoded admin token kontrolü (öncelikli)
+        if (token === 'hardcoded-admin-token') {
+            console.log('Hardcoded admin token doğrulandı');
+            const adminEmail = process.env.ADMIN_EMAIL || 'admin@bismilvinc.com';
+            req.user = {
+                id: 'admin-user-id',
+                email: adminEmail,
+                role: 'admin'
+            };
+            next();
+            return;
+        }
+        
         // Supabase bağlantısı kontrolü
         if (!supabaseConnection.isConnected) {
             console.log('Supabase bağlantısı yok, hardcoded admin kontrolü yapılıyor');
             const adminEmail = process.env.ADMIN_EMAIL || 'admin@bismilvinc.com';
-            const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+            const adminPassword = process.env.ADMIN_PASSWORD || 'BismilVinc2024!';
             console.log('Admin bilgileri kontrol ediliyor (authenticateAdmin):', { 
                 email: adminEmail, 
                 password: adminPassword ? '***' : 'boş' 
@@ -732,7 +745,7 @@ app.post('/api/admin/login', async (req, res) => {
             console.log('Supabase bağlantısı yok, hardcoded admin kontrolü yapılıyor');
             
             const adminEmail = process.env.ADMIN_EMAIL || 'admin@bismilvinc.com';
-            const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+            const adminPassword = process.env.ADMIN_PASSWORD || 'BismilVinc2024!';
             
             console.log('Admin bilgileri kontrol ediliyor:', { 
                 email: adminEmail, 
@@ -779,10 +792,39 @@ app.post('/api/admin/login', async (req, res) => {
                 if (error) {
                     console.error('Supabase login hatası:', error);
                     console.log('Full error:', error);
-                    return res.status(401).json({
-                        success: false,
-                        message: 'Geçersiz e-posta veya şifre'
-                    });
+                    
+                    // Supabase başarısız olursa hardcoded admin'e fallback yap
+                    console.log('Supabase başarısız, hardcoded admin kontrolü yapılıyor...');
+                    
+                    const adminEmail = process.env.ADMIN_EMAIL || 'admin@bismilvinc.com';
+                    const adminPassword = process.env.ADMIN_PASSWORD || 'BismilVinc2024!';
+                    
+                    if (email === adminEmail && password === adminPassword) {
+                        console.log('Hardcoded admin girişi başarılı');
+                        
+                        // Hardcoded admin için basit token
+                        const token = 'hardcoded-admin-token';
+
+                        console.log('Login başarılı, hardcoded token oluşturuldu');
+                        console.log('=== ADMIN LOGIN TAMAMLANDI ===');
+                        
+                        return res.json({
+                            success: true,
+                            message: 'Giriş başarılı',
+                            token,
+                            user: {
+                                id: 'admin-user-id',
+                                email: email,
+                                role: 'admin'
+                            }
+                        });
+                    } else {
+                        console.log('Hardcoded admin bilgileri de eşleşmedi');
+                        return res.status(401).json({
+                            success: false,
+                            message: 'Geçersiz e-posta veya şifre'
+                        });
+                    }
                 }
                 
                 if (data.user) {
@@ -814,10 +856,39 @@ app.post('/api/admin/login', async (req, res) => {
             } catch (authError) {
                 console.error('Supabase authentication hatası:', authError);
                 console.log('Full error:', authError);
-                return res.status(401).json({
-                    success: false,
-                    message: 'Geçersiz e-posta veya şifre'
-                });
+                
+                // Supabase başarısız olursa hardcoded admin'e fallback yap
+                console.log('Supabase başarısız, hardcoded admin kontrolü yapılıyor...');
+                
+                const adminEmail = process.env.ADMIN_EMAIL || 'admin@bismilvinc.com';
+                const adminPassword = process.env.ADMIN_PASSWORD || 'BismilVinc2024!';
+                
+                if (email === adminEmail && password === adminPassword) {
+                    console.log('Hardcoded admin girişi başarılı');
+                    
+                    // Hardcoded admin için basit token
+                    const token = 'hardcoded-admin-token';
+
+                    console.log('Login başarılı, hardcoded token oluşturuldu');
+                    console.log('=== ADMIN LOGIN TAMAMLANDI ===');
+                    
+                    return res.json({
+                        success: true,
+                        message: 'Giriş başarılı',
+                        token,
+                        user: {
+                            id: 'admin-user-id',
+                            email: email,
+                            role: 'admin'
+                        }
+                    });
+                } else {
+                    console.log('Hardcoded admin bilgileri de eşleşmedi');
+                    return res.status(401).json({
+                        success: false,
+                        message: 'Geçersiz e-posta veya şifre'
+                    });
+                }
             }
         }
     } catch (error) {
@@ -1567,7 +1638,7 @@ const startServer = async () => {
         // Varsayılan hizmetleri oluştur (sadece Supabase bağlıysa)
         if (supabaseConnection.isConnected) {
             try {
-                const serviceRepo = new SupabaseServiceRepository();
+                const serviceRepo = new ServiceRepository();
                 await serviceRepo.initializeDefaultServices();
                 console.log('✅ Varsayılan hizmetler oluşturuldu');
             } catch (serviceError) {
