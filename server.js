@@ -143,13 +143,12 @@ const authenticateAdmin = async (req, res, next) => {
         // Supabase bağlantısı kontrolü
         if (!supabaseConnection.isConnected) {
             console.log('Supabase bağlantısı yok, hardcoded admin kontrolü yapılıyor');
-            const adminEmail = process.env.ADMIN_EMAIL;
-            const adminPassword = process.env.ADMIN_PASSWORD;
-            
-            if (!adminEmail || !adminPassword) {
-                console.log('Hardcoded admin bilgileri eksik');
-                return res.status(401).json({ success: false, message: 'Sunucu yapılandırma hatası' });
-            }
+            const adminEmail = process.env.ADMIN_EMAIL || 'admin@bismilvinc.com';
+            const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+            console.log('Admin bilgileri kontrol ediliyor (authenticateAdmin):', { 
+                email: adminEmail, 
+                password: adminPassword ? '***' : 'boş' 
+            });
             
             // Hardcoded admin için basit token kontrolü
             if (token === 'hardcoded-admin-token') {
@@ -236,6 +235,11 @@ app.get('/ANASYFA', (req, res) => {
 
 // Admin Panel Route
 app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin/index.html'));
+});
+
+// Admin Dashboard Route
+app.get('/admin/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin/index.html'));
 });
 
@@ -735,16 +739,13 @@ app.post('/api/admin/login', async (req, res) => {
         if (!supabaseConnection.isConnected) {
             console.log('Supabase bağlantısı yok, hardcoded admin kontrolü yapılıyor');
             
-            const adminEmail = process.env.ADMIN_EMAIL;
-            const adminPassword = process.env.ADMIN_PASSWORD;
+            const adminEmail = process.env.ADMIN_EMAIL || 'admin@bismilvinc.com';
+            const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
             
-            if (!adminEmail || !adminPassword) {
-                console.log('Hardcoded admin bilgileri eksik');
-                return res.status(500).json({
-                    success: false,
-                    message: 'Sunucu yapılandırma hatası - Admin bilgileri eksik'
-                });
-            }
+            console.log('Admin bilgileri kontrol ediliyor:', { 
+                email: adminEmail, 
+                password: adminPassword ? '***' : 'boş' 
+            });
             
             if (email === adminEmail && password === adminPassword) {
                 console.log('Hardcoded admin girişi başarılı');
@@ -860,18 +861,64 @@ app.get('/api/admin/validate', authenticateAdmin, async (req, res) => {
         console.log('Token validation isteği alındı');
         console.log('User:', req.user);
         
+        // Supabase bağlantısı kontrolü
+        if (supabaseConnection.isConnected) {
+            try {
+                const supabase = supabaseConnection.getClient();
+                const token = req.headers.authorization?.split(' ')[1];
+                
+                if (!token) {
+                    console.log('Token bulunamadı');
+                    return res.status(401).json({ success: false, message: 'Token bulunamadı' });
+                }
+                
+                const { data: { user }, error } = await supabase.auth.getUser(token);
+                
+                if (error) {
+                    console.error('Supabase token doğrulama hatası:', error);
+                    return res.status(401).json({ success: false, message: 'Geçersiz token' });
+                }
+                
+                if (user) {
+                    console.log('Supabase token doğrulandı, kullanıcı:', user.email);
+                    const userRepo = new SupabaseUserRepository();
+                    const userData = await userRepo.findByEmail(user.email);
+                    
+                    if (userData && userData.role === 'admin') {
+                        res.json({
+                            success: true,
+                            message: 'Token geçerli',
+                            user: {
+                                id: userData.id,
+                                email: userData.email,
+                                role: userData.role
+                            }
+                        });
+                        return;
+                    } else {
+                        console.log('Kullanıcı admin değil:', user.email);
+                        return res.status(401).json({ success: false, message: 'Admin yetkisi gerekli' });
+                    }
+                }
+            } catch (supabaseError) {
+                console.error('Supabase validation hatası:', supabaseError);
+                console.log('Full error:', supabaseError);
+            }
+        }
+        
+        // Fallback: req.user'dan gelen bilgileri kullan (hardcoded admin için)
         res.json({
             success: true,
             message: 'Token geçerli',
             user: {
                 id: req.user.id,
-                name: req.user.name,
                 email: req.user.email,
                 role: req.user.role
             }
         });
     } catch (error) {
         console.error('Token validation error:', error);
+        console.log('Full error:', error);
         res.status(401).json({
             success: false,
             message: 'Token geçersiz'

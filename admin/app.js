@@ -2,7 +2,7 @@
 class AdminPanel {
     constructor() {
         this.currentUser = null;
-        this.token = localStorage.getItem('adminToken');
+        this.token = localStorage.getItem('admin_token');
         this.lastValidationTime = 0;
         this.validationInProgress = false;
         this.init();
@@ -290,16 +290,29 @@ class AdminPanel {
             const data = await response.json();
             console.log('Response data:', data);
 
-            if (response.ok) {
+            if (response.ok && data.success) {
                 console.log('Login başarılı, token alındı');
+                console.log('Response data:', data);
+                console.log('Token değeri:', data.token);
+                
+                if (!data.token) {
+                    console.error('Token bulunamadı response data\'da');
+                    errorDiv.textContent = 'Sunucu hatası: Token alınamadı';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                
                 this.token = data.token;
                 this.currentUser = data.user;
-                localStorage.setItem('adminToken', this.token);
+                localStorage.setItem('admin_token', this.token);
                 console.log('Token localStorage\'a kaydedildi');
-                this.showDashboard();
-                this.showMessage('Başarıyla giriş yapıldı!', 'success');
+                // Redirect to admin dashboard
+                window.location.href = '/admin/dashboard';
             } else {
-                console.log('Login başarısız:', data.message);
+                console.log('Login başarısız - Response status:', response.status);
+                console.log('Response data:', data);
+                console.log('Success field:', data.success);
+                console.log('Message:', data.message);
                 errorDiv.textContent = data.message || 'Giriş başarısız';
                 errorDiv.style.display = 'block';
             }
@@ -312,7 +325,7 @@ class AdminPanel {
     }
 
     handleLogout() {
-        localStorage.removeItem('adminToken');
+        localStorage.removeItem('admin_token');
         this.token = null;
         this.currentUser = null;
         this.showLogin();
@@ -332,7 +345,10 @@ class AdminPanel {
 
     updateUserInfo() {
         if (this.currentUser) {
-            document.getElementById('userName').textContent = this.currentUser.name;
+            const userNameElement = document.getElementById('userName');
+            if (userNameElement) {
+                userNameElement.textContent = this.currentUser.email || 'Admin';
+            }
         }
     }
 
