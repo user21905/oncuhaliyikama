@@ -789,14 +789,8 @@ app.post('/api/admin/login', async (req, res) => {
                     role: 'admin'
                 }
             });
-        }
-
-        // Supabase bağlantısı kontrolü
-        const isDbConnected = supabaseConnection.isConnected;
-        console.log('Supabase bağlantı durumu:', isDbConnected ? 'BAĞLI' : 'BAĞLI DEĞİL');
-
-        if (!isDbConnected) {
-            console.log('Supabase bağlantısı yok, hardcoded admin bilgileri eşleşmedi');
+        } else {
+            console.log('Admin bilgileri eşleşmedi');
             console.log('Girilen:', { email, password: '***' });
             console.log('Beklenen:', { email: adminEmail, password: '***' });
             return res.status(401).json({
@@ -804,71 +798,6 @@ app.post('/api/admin/login', async (req, res) => {
                 message: 'Geçersiz e-posta veya şifre'
             });
         }
-
-        // Supabase bağlantısı varsa normal akış
-        console.log('Supabase bağlantısı var, veritabanından kullanıcı aranıyor');
-        const userRepo = new SupabaseUserRepository();
-        console.log('Kullanıcı aranıyor:', email);
-        
-        const user = await userRepo.findByEmail(email);
-        console.log('Kullanıcı bulundu mu:', !!user);
-        console.log('Kullanıcı detayları:', user ? {
-            email: user.email,
-            role: user.role,
-            isActive: user.isActive
-        } : 'Kullanıcı bulunamadı');
-
-        if (!user || user.role !== 'admin') {
-            console.log('Kullanıcı bulunamadı veya admin değil');
-            return res.status(401).json({
-                success: false,
-                message: 'Geçersiz e-posta veya şifre'
-            });
-        }
-
-        console.log('Şifre kontrol ediliyor...');
-        const isValidPassword = await bcrypt.compare(password, user.password);
-        console.log('Şifre geçerli mi:', isValidPassword);
-        
-        if (!isValidPassword) {
-            console.log('Şifre geçersiz');
-            return res.status(401).json({
-                success: false,
-                message: 'Geçersiz e-posta veya şifre'
-            });
-        }
-
-        // Update last login
-        try {
-            await userRepo.update(user.id, { lastLogin: new Date() });
-            console.log('Son giriş tarihi güncellendi');
-        } catch (updateError) {
-            console.warn('Son giriş tarihi güncellenemedi:', updateError.message);
-        }
-
-        // Generate JWT token
-        console.log('JWT token oluşturuluyor...');
-        const token = jwt.sign(
-            { userId: user.id, email: user.email, role: user.role },
-            jwtSecret,
-            { expiresIn: '24h' }
-        );
-
-        console.log('Login başarılı, token oluşturuldu');
-        console.log('Token örneği:', token.substring(0, 50) + '...');
-        console.log('=== ADMIN LOGIN TAMAMLANDI ===');
-        
-        res.json({
-            success: true,
-            message: 'Giriş başarılı',
-            token,
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }
-        });
     } catch (error) {
         console.error('=== ADMIN LOGIN HATASI ===');
         console.error('Admin login error:', error);
