@@ -650,7 +650,6 @@ app.get('/api/test/env', (req, res) => {
         const envVars = {
             SUPABASE_URL: process.env.SUPABASE_URL ? 'VAR' : 'YOK',
             SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ? 'VAR' : 'YOK',
-            JWT_SECRET: process.env.JWT_SECRET ? 'VAR' : 'YOK',
             ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'YOK',
             ADMIN_PASSWORD: process.env.ADMIN_PASSWORD ? 'VAR' : 'YOK',
             CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME ? 'VAR' : 'YOK',
@@ -667,7 +666,6 @@ app.get('/api/test/env', (req, res) => {
         const hasPlaceholders = Object.values(placeholderChecks).some(Boolean);
         const hasAllRequiredVars = envVars.SUPABASE_URL === 'VAR' && 
                                  envVars.SUPABASE_ANON_KEY === 'VAR' && 
-                                 envVars.JWT_SECRET === 'VAR' && 
                                  envVars.ADMIN_EMAIL !== 'YOK' && 
                                  envVars.ADMIN_PASSWORD === 'VAR';
 
@@ -1518,7 +1516,6 @@ const startServer = async () => {
         console.log('Environment variables kontrol ediliyor...');
         console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? 'VAR' : 'YOK');
         console.log('SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY ? 'VAR' : 'YOK');
-        console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'VAR' : 'YOK');
         console.log('ADMIN_EMAIL:', process.env.ADMIN_EMAIL || 'YOK');
         console.log('ADMIN_PASSWORD:', process.env.ADMIN_PASSWORD ? 'VAR' : 'YOK');
         
