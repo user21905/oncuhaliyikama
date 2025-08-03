@@ -8,6 +8,7 @@ Bu dosyada Vercel'de ayarlanması gereken environment variables'lar listelenmiş
 ```
 SUPABASE_URL=https://amstarhyztgcjldtqkek.supabase.co
 SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFtc3Rhcmh5enRnY2psZHRxa2VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxNTczNDIsImV4cCI6MjA2OTczMzM0Mn0.21jM442VWRv2aABBSnwt7XBXQrwrf_SVB
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
 ```
 
 ### Cloudinary Medya Yükleme
