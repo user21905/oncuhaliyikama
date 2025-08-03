@@ -8,14 +8,14 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
-// Database bağlantısı
-const supabaseConnection = require('./database/supabase-connection');
+// Database bağlantısı - Hardcoded admin için gerekli değil
+// const supabaseConnection = require('./database/supabase-connection');
 
-// Supabase Repositories
-const SupabaseContactRepository = require('./database/repositories/SupabaseContactRepository');
-const SupabaseSettingsRepository = require('./database/repositories/SupabaseSettingsRepository');
-const SupabaseUserRepository = require('./database/repositories/SupabaseUserRepository');
-const SupabaseServiceRepository = require('./database/repositories/SupabaseServiceRepository');
+// Supabase Repositories - Hardcoded admin için gerekli değil
+// const SupabaseContactRepository = require('./database/repositories/SupabaseContactRepository');
+// const SupabaseSettingsRepository = require('./database/repositories/SupabaseSettingsRepository');
+// const SupabaseUserRepository = require('./database/repositories/SupabaseUserRepository');
+// const SupabaseServiceRepository = require('./database/repositories/SupabaseServiceRepository');
 
 // Middleware
 const { handleUploadError } = require('./middleware/upload');
@@ -129,7 +129,7 @@ app.get('/favicon.ico', (req, res) => {
 // Admin klasörü için özel static servis
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 
-// Admin Authentication Middleware
+// Admin Authentication Middleware - Hardcoded Admin Only
 const authenticateAdmin = async (req, res, next) => {
     try {
         console.log('=== AUTHENTICATE ADMIN BAŞLADI ===');
@@ -143,7 +143,12 @@ const authenticateAdmin = async (req, res, next) => {
         console.log('Token alındı, doğrulanıyor...');
         
         // JWT_SECRET kontrolü
-        const jwtSecret = process.env.JWT_SECRET || 'bismil-vinc-fallback-secret-2024';
+        const jwtSecret = process.env.JWT_SECRET;
+        
+        if (!jwtSecret) {
+            console.log('JWT_SECRET environment variable eksik');
+            return res.status(401).json({ success: false, message: 'Sunucu yapılandırma hatası' });
+        }
         
         const decoded = jwt.verify(token, jwtSecret);
         console.log('Token doğrulandı, kullanıcı bilgileri:', {
@@ -152,46 +157,27 @@ const authenticateAdmin = async (req, res, next) => {
             role: decoded.role
         });
 
-        // Supabase bağlantısı kontrolü
-        if (!supabaseConnection.isConnected) {
-            console.log('Supabase bağlantısı yok, hardcoded admin kontrolü yapılıyor');
-            
-            // Hardcoded admin kontrolü
-            const adminEmail = process.env.ADMIN_EMAIL;
-            
-            if (!adminEmail) {
-                console.log('ADMIN_EMAIL environment variable eksik');
-                return res.status(401).json({ success: false, message: 'Geçersiz token' });
-            }
-            
-            if (decoded.email === adminEmail && decoded.role === 'admin') {
-                console.log('Hardcoded admin token doğrulandı');
-                req.user = {
-                    _id: decoded.userId,
-                    email: decoded.email,
-                    role: decoded.role,
-                    name: 'Admin'
-                };
-                next();
-                return;
-            } else {
-                console.log('Hardcoded admin token geçersiz');
-                return res.status(401).json({ success: false, message: 'Geçersiz token' });
-            }
+        // Hardcoded admin kontrolü
+        const adminEmail = process.env.ADMIN_EMAIL;
+        
+        if (!adminEmail) {
+            console.log('ADMIN_EMAIL environment variable eksik');
+            return res.status(401).json({ success: false, message: 'Sunucu yapılandırma hatası' });
         }
-
-        // Supabase bağlantısı varsa normal akış
-        const userRepo = new SupabaseUserRepository();
-        const user = await userRepo.findById(decoded.userId);
-
-        if (!user || user.role !== 'admin') {
-            console.log('Kullanıcı bulunamadı veya admin değil');
+        
+        if (decoded.email === adminEmail && decoded.role === 'admin') {
+            console.log('Hardcoded admin token doğrulandı');
+            req.user = {
+                id: decoded.userId,
+                email: decoded.email,
+                role: decoded.role,
+                name: 'Admin'
+            };
+            next();
+        } else {
+            console.log('Hardcoded admin token geçersiz');
             return res.status(401).json({ success: false, message: 'Geçersiz token' });
         }
-
-        console.log('Admin kullanıcı doğrulandı:', user.email);
-        req.user = user;
-        next();
     } catch (error) {
         console.error('=== AUTHENTICATE ADMIN HATASI ===');
         console.error('Token doğrulama hatası:', error);
@@ -836,35 +822,17 @@ app.get('/api/admin/validate', authenticateAdmin, async (req, res) => {
     }
 });
 
-// Admin Dashboard Stats
+// Admin Dashboard Stats - Hardcoded Admin Only
 app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
     try {
         console.log('Admin stats isteği alındı');
         
-        // Supabase bağlantısı kontrolü
-        if (!supabaseConnection.isConnected) {
-            console.log('Supabase bağlantısı yok, fallback stats döndürülüyor');
-            return res.json({
-                services: 4,
-                contacts: 0,
-                pageViews: 0,
-                media: 0
-            });
-        }
-
-        const contactRepo = new SupabaseContactRepository();
-        const settingsRepo = new SupabaseSettingsRepository();
-
-        const [contacts, settings] = await Promise.all([
-            contactRepo.findAll(),
-            settingsRepo.findAll()
-        ]);
-
+        // Hardcoded stats döndür
         const stats = {
-            services: 4, // Static for now, can be made dynamic
-            contacts: contacts.total || 0,
-            pageViews: 0, // Can be implemented with analytics
-            media: 0 // Can be implemented with media count
+            services: 4,
+            contacts: 0,
+            pageViews: 0,
+            media: 0
         };
 
         console.log('Stats başarıyla getirildi:', stats);
@@ -882,21 +850,14 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
     }
 });
 
-// Recent Contacts
+// Recent Contacts - Hardcoded Admin Only
 app.get('/api/admin/contacts/recent', authenticateAdmin, async (req, res) => {
     try {
         console.log('=== ADMIN RECENT CONTACTS BAŞLADI ===');
         
-        if (!supabaseConnection.isConnected) {
-            console.log('Supabase bağlantısı yok, boş son iletişim listesi döndürülüyor');
-            return res.json([]);
-        }
-        
-        const contactRepo = new SupabaseContactRepository();
-        const contacts = await contactRepo.findAll();
-        // Son 5 iletişimi al
-        const recentContacts = contacts.slice(0, 5);
-        console.log('Son iletişimler başarıyla yüklendi:', recentContacts.length);
+        // Hardcoded boş liste döndür
+        console.log('Hardcoded admin için boş iletişim listesi döndürülüyor');
+        return res.json([]);
         res.json(recentContacts);
     } catch (error) {
         console.error('Son iletişimler hatası:', error);
