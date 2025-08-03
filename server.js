@@ -140,7 +140,7 @@ const authenticateAdmin = async (req, res, next) => {
 
         console.log('Token alındı, Supabase ile doğrulanıyor...');
         
-        // Hardcoded admin token kontrolü (öncelikli)
+        // Hardcoded admin token kontrolü (geçici olarak tutuldu)
         if (token === 'hardcoded-admin-token') {
             console.log('Hardcoded admin token doğrulandı');
             const adminEmail = process.env.ADMIN_EMAIL || 'admin@bismilvinc.com';
@@ -208,7 +208,10 @@ const authenticateAdmin = async (req, res, next) => {
     } catch (error) {
         console.error('=== AUTHENTICATE ADMIN HATASI ===');
         console.error('Token doğrulama hatası:', error);
-        console.log('Full error:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        console.error('Error code:', error.code);
+        console.error('Full error object:', JSON.stringify(error, null, 2));
         return res.status(401).json({ success: false, message: 'Geçersiz token' });
     }
 };
@@ -740,25 +743,46 @@ app.post('/api/admin/login', async (req, res) => {
             });
         }
 
-        // Supabase bağlantısı kontrolü
+                // Supabase bağlantısı kontrolü
         if (!supabaseConnection.isConnected) {
-            console.log('Supabase bağlantısı yok, hardcoded admin kontrolü yapılıyor');
-            
-            const adminEmail = process.env.ADMIN_EMAIL || 'admin@bismilvinc.com';
-            const adminPassword = process.env.ADMIN_PASSWORD || 'BismilVinc2024!';
-            
-            console.log('Admin bilgileri kontrol ediliyor:', { 
-                email: adminEmail, 
-                password: adminPassword ? '***' : 'boş' 
+            console.error('❌ Supabase bağlantısı yok!');
+            return res.status(500).json({
+                success: false,
+                message: 'Veritabanı bağlantısı kurulamadı'
+            });
+        }
+        
+        // Supabase ile kullanıcı doğrulama
+        console.log('Supabase ile kullanıcı doğrulama yapılıyor...');
+        
+        try {
+            const supabase = supabaseConnection.getClient();
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
             });
             
-            if (email === adminEmail && password === adminPassword) {
-                console.log('Hardcoded admin girişi başarılı');
+            if (error) {
+                console.error('Supabase login hatası:', error);
+                console.error('Error message:', error.message);
+                console.error('Error status:', error.status);
+                console.error('Full error object:', JSON.stringify(error, null, 2));
                 
-                // Hardcoded admin için basit token
-                const token = 'hardcoded-admin-token';
-
-                console.log('Login başarılı, hardcoded token oluşturuldu');
+                return res.status(401).json({
+                    success: false,
+                    message: 'Geçersiz e-posta veya şifre'
+                });
+            }
+            
+            if (data && data.user) {
+                console.log('✅ Supabase login başarılı, kullanıcı:', data.user.email);
+                console.log('User ID:', data.user.id);
+                console.log('Email confirmed:', data.user.email_confirmed_at ? 'Evet' : 'Hayır');
+                
+                // Supabase access token'ı kullan
+                const token = data.session.access_token;
+                
+                console.log('Login başarılı, Supabase token alındı');
                 console.log('=== ADMIN LOGIN TAMAMLANDI ===');
                 
                 return res.json({
@@ -766,139 +790,45 @@ app.post('/api/admin/login', async (req, res) => {
                     message: 'Giriş başarılı',
                     token,
                     user: {
-                        id: 'admin-user-id',
-                        email: email,
+                        id: data.user.id,
+                        email: data.user.email,
                         role: 'admin'
                     }
                 });
             } else {
-                console.log('Hardcoded admin bilgileri eşleşmedi');
+                console.log('❌ Supabase login başarısız - kullanıcı bulunamadı');
                 return res.status(401).json({
                     success: false,
                     message: 'Geçersiz e-posta veya şifre'
                 });
             }
-        } else {
-            // Supabase ile kullanıcı doğrulama
-            console.log('Supabase ile kullanıcı doğrulama yapılıyor...');
+        } catch (authError) {
+            console.error('❌ Supabase authentication hatası:', authError);
+            console.error('Error message:', authError.message);
+            console.error('Error stack:', authError.stack);
+            console.error('Full error object:', JSON.stringify(authError, null, 2));
             
-            try {
-                const supabase = supabaseConnection.getClient();
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-                
-                if (error) {
-                    console.error('Supabase login hatası:', error);
-                    console.log('Full error:', error);
-                    
-                    // Supabase başarısız olursa hardcoded admin'e fallback yap
-                    console.log('Supabase başarısız, hardcoded admin kontrolü yapılıyor...');
-                    
-                    const adminEmail = process.env.ADMIN_EMAIL || 'admin@bismilvinc.com';
-                    const adminPassword = process.env.ADMIN_PASSWORD || 'BismilVinc2024!';
-                    
-                    if (email === adminEmail && password === adminPassword) {
-                        console.log('Hardcoded admin girişi başarılı');
-                        
-                        // Hardcoded admin için basit token
-                        const token = 'hardcoded-admin-token';
-
-                        console.log('Login başarılı, hardcoded token oluşturuldu');
-                        console.log('=== ADMIN LOGIN TAMAMLANDI ===');
-                        
-                        return res.json({
-                            success: true,
-                            message: 'Giriş başarılı',
-                            token,
-                            user: {
-                                id: 'admin-user-id',
-                                email: email,
-                                role: 'admin'
-                            }
-                        });
-                    } else {
-                        console.log('Hardcoded admin bilgileri de eşleşmedi');
-                        return res.status(401).json({
-                            success: false,
-                            message: 'Geçersiz e-posta veya şifre'
-                        });
-                    }
-                }
-                
-                if (data.user) {
-                    console.log('Supabase login başarılı, kullanıcı:', data.user.email);
-                    
-                    // Supabase access token'ı kullan
-                    const token = data.session.access_token;
-                    
-                    console.log('Login başarılı, Supabase token alındı');
-                    console.log('=== ADMIN LOGIN TAMAMLANDI ===');
-                    
-                    return res.json({
-                        success: true,
-                        message: 'Giriş başarılı',
-                        token,
-                        user: {
-                            id: data.user.id,
-                            email: data.user.email,
-                            role: 'admin' // Supabase Auth kullanıcıları admin olarak kabul ediyoruz
-                        }
-                    });
-                } else {
-                    console.log('Supabase login başarısız - kullanıcı bulunamadı');
-                    return res.status(401).json({
-                        success: false,
-                        message: 'Geçersiz e-posta veya şifre'
-                    });
-                }
-            } catch (authError) {
-                console.error('Supabase authentication hatası:', authError);
-                console.log('Full error:', authError);
-                
-                // Supabase başarısız olursa hardcoded admin'e fallback yap
-                console.log('Supabase başarısız, hardcoded admin kontrolü yapılıyor...');
-                
-                const adminEmail = process.env.ADMIN_EMAIL || 'admin@bismilvinc.com';
-                const adminPassword = process.env.ADMIN_PASSWORD || 'BismilVinc2024!';
-                
-                if (email === adminEmail && password === adminPassword) {
-                    console.log('Hardcoded admin girişi başarılı');
-                    
-                    // Hardcoded admin için basit token
-                    const token = 'hardcoded-admin-token';
-
-                    console.log('Login başarılı, hardcoded token oluşturuldu');
-                    console.log('=== ADMIN LOGIN TAMAMLANDI ===');
-                    
-                    return res.json({
-                        success: true,
-                        message: 'Giriş başarılı',
-                        token,
-                        user: {
-                            id: 'admin-user-id',
-                            email: email,
-                            role: 'admin'
-                        }
-                    });
-                } else {
-                    console.log('Hardcoded admin bilgileri de eşleşmedi');
-                    return res.status(401).json({
-                        success: false,
-                        message: 'Geçersiz e-posta veya şifre'
-                    });
-                }
-            }
+            return res.status(500).json({
+                success: false,
+                message: 'Kimlik doğrulama hatası'
+            });
         }
     } catch (error) {
         console.error('=== ADMIN LOGIN HATASI ===');
         console.error('Admin login error:', error);
-        console.log('Full error:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        console.error('Error code:', error.code);
+        console.error('Full error object:', JSON.stringify(error, null, 2));
+        
         res.status(500).json({
             success: false,
             message: 'Giriş işlemi başarısız',
-            error: process.env.NODE_ENV === 'development' ? error.message : 'Bir hata oluştu'
+            error: process.env.NODE_ENV === 'development' ? {
+                message: error.message,
+                stack: error.stack,
+                code: error.code
+            } : 'Bir hata oluştu'
         });
     }
 });
