@@ -14,9 +14,10 @@ class SupabaseUserRepository {
         try {
             const supabase = await this.connect();
             
-            // Şifreyi hashle
+            // Şifreyi hashle ve password_hash olarak kaydet
             if (userData.password) {
-                userData.password = await bcrypt.hash(userData.password, 10);
+                userData.password_hash = await bcrypt.hash(userData.password, 10);
+                delete userData.password;
             }
             
             const { data, error } = await supabase
@@ -37,7 +38,7 @@ class SupabaseUserRepository {
             const supabase = await this.connect();
             const { data, error } = await supabase
                 .from(this.tableName)
-                .select('id, email, name, role, created_at, updated_at')
+                .select('id, email, role, created_at, updated_at')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -53,7 +54,7 @@ class SupabaseUserRepository {
             const supabase = await this.connect();
             const { data, error } = await supabase
                 .from(this.tableName)
-                .select('id, email, name, role, created_at, updated_at')
+                .select('id, email, role, created_at, updated_at')
                 .eq('id', id)
                 .single();
 
@@ -88,14 +89,15 @@ class SupabaseUserRepository {
             
             // Şifre güncelleniyorsa hashle
             if (updateData.password) {
-                updateData.password = await bcrypt.hash(updateData.password, 10);
+                updateData.password_hash = await bcrypt.hash(updateData.password, 10);
+                delete updateData.password;
             }
             
             const { data, error } = await supabase
                 .from(this.tableName)
                 .update(updateData)
                 .eq('id', id)
-                .select('id, email, name, role, created_at, updated_at');
+                .select('id, email, role, created_at, updated_at');
 
             if (error) throw error;
             return data[0];
@@ -128,7 +130,7 @@ class SupabaseUserRepository {
                 return { success: false, message: 'Kullanıcı bulunamadı' };
             }
 
-            const isPasswordValid = await bcrypt.compare(password, user.password);
+            const isPasswordValid = await bcrypt.compare(password, user.password_hash);
             if (!isPasswordValid) {
                 return { success: false, message: 'Geçersiz şifre' };
             }
@@ -138,7 +140,6 @@ class SupabaseUserRepository {
                 user: {
                     id: user.id,
                     email: user.email,
-                    name: user.name,
                     role: user.role
                 }
             };
@@ -176,7 +177,6 @@ class SupabaseUserRepository {
                 const adminData = {
                     email: adminEmail,
                     password: adminPassword,
-                    name: 'Admin',
                     role: 'admin'
                 };
 
@@ -198,7 +198,7 @@ class SupabaseUserRepository {
             
             const { error } = await supabase
                 .from(this.tableName)
-                .update({ password: hashedPassword })
+                .update({ password_hash: hashedPassword })
                 .eq('id', id);
 
             if (error) throw error;
