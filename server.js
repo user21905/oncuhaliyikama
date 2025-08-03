@@ -15,7 +15,7 @@ require('dotenv').config();
 const SupabaseContactRepository = require('./database/repositories/SupabaseContactRepository');
 const SupabaseSettingsRepository = require('./database/repositories/SupabaseSettingsRepository');
 const SupabaseUserRepository = require('./database/repositories/SupabaseUserRepository');
-const SupabaseServiceRepository = require('./database/repositories/SupabaseServiceRepository');
+const ServiceRepository = require('./database/repositories/SupabaseServiceRepository');
 
 // Middleware
 const { handleUploadError } = require('./middleware/upload');
