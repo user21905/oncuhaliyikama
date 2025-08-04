@@ -1,0 +1,27 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://www.bismilvinc.com/sitemap.xml
+
+# Admin panel ve API'leri gizle
+Disallow: /admin/
+Disallow: /api/
+
+# CSS, JS ve resim dosyalarına izin ver
+Allow: /styles.css
+Allow: /script.js
+Allow: /navbar.js
+Allow: /footer.js
+Allow: /*.css
+Allow: /*.js
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.gif
+Allow: /*.svg
+Allow: /*.ico
+Allow: /*.webp
+
+# Crawl-delay (isteğe bağlı)
+Crawl-delay: 1 
