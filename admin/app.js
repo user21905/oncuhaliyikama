@@ -560,13 +560,16 @@ class AdminPanel {
                 }
 
                 const html = services.map((service, index) => {
-                    const serviceId = service._id || service.id || `unknown_${index}`;
-                    console.log(`Hizmet ${index + 1}: ID=${serviceId}, Name=${service.name}, Slug=${service.slug}`);
+                    const serviceId = service.id || service._id || `unknown_${index}`;
+                    const serviceTitle = service.title || service.name || 'İsimsiz Hizmet';
+                    const serviceDescription = service.description || 'Açıklama yok';
+                    
+                    console.log(`📋 Hizmet ${index + 1}: ID=${serviceId}, Title=${serviceTitle}, Slug=${service.slug}`);
                     
                     return `
                         <div class="service-item">
-                            <h3>${service.name || 'İsimsiz Hizmet'}</h3>
-                            <p>${service.description || 'Açıklama yok'}</p>
+                            <h3>${serviceTitle}</h3>
+                            <p>${serviceDescription}</p>
                             <div class="service-actions">
                                 <button class="btn btn-warning btn-sm" data-action="edit-service" data-service-id="${serviceId}">
                                     <i class="fas fa-edit"></i> Düzenle
@@ -781,6 +784,8 @@ class AdminPanel {
     }
 
     async handleSettingsSubmit() {
+        console.log('🔧 Settings submit başladı');
+        
         const formData = {
             site_title: document.getElementById('siteTitle').value,
             site_description: document.getElementById('siteDescription').value,
@@ -793,6 +798,8 @@ class AdminPanel {
             map_longitude: document.getElementById('mapLongitude').value
         };
 
+        console.log('📋 Gönderilecek veriler:', formData);
+
         try {
             const response = await fetch('/api/admin/settings/update', {
                 method: 'POST',
@@ -803,17 +810,33 @@ class AdminPanel {
                 body: JSON.stringify(formData)
             });
 
+            console.log('📡 API response status:', response.status);
+            
             const data = await response.json();
+            console.log('📡 API response data:', data);
+            
             if (data.success) {
-                this.showMessage('Ayarlar başarıyla kaydedildi', 'success');
+                const message = data.successCount ? 
+                    `${data.successCount} adet ayar başarıyla kaydedildi` : 
+                    'Ayarlar başarıyla kaydedildi';
+                this.showMessage(message, 'success');
+                
                 // Ayarları yeniden yükle
                 await this.loadSettings();
             } else {
-                this.showMessage(data.message || 'Ayarlar kaydedilemedi', 'error');
+                let errorMessage = data.message || 'Ayarlar kaydedilemedi';
+                
+                // Detaylı hata mesajları varsa göster
+                if (data.errors && data.errors.length > 0) {
+                    const errorDetails = data.errors.map(err => `${err.key}: ${err.error}`).join(', ');
+                    errorMessage += ` (${errorDetails})`;
+                }
+                
+                this.showMessage(errorMessage, 'error');
             }
         } catch (error) {
-            console.error('Settings update error:', error);
-            this.showMessage('Bir hata oluştu', 'error');
+            console.error('❌ Settings update error:', error);
+            this.showMessage(`Bir hata oluştu: ${error.message}`, 'error');
         }
     }
 

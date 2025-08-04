@@ -1090,20 +1090,49 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
 // Admin Settings Update
 app.post('/api/admin/settings/update', authenticateAdmin, async (req, res) => {
     try {
+        console.log('🔧 Settings update API çağrısı başladı');
+        console.log('Gelen veriler:', JSON.stringify(req.body, null, 2));
+        
         const settingsRepo = new SupabaseSettingsRepository();
         const updates = req.body;
         
+        let successCount = 0;
+        let errorCount = 0;
+        const errors = [];
+        
         // Her ayarı güncelle
         for (const [key, value] of Object.entries(updates)) {
-            await settingsRepo.updateByKey(key, value);
+            try {
+                console.log(`🔧 Ayar güncelleniyor: ${key} = ${value}`);
+                await settingsRepo.updateByKey(key, value);
+                successCount++;
+                console.log(`✅ Ayar güncellendi: ${key}`);
+            } catch (error) {
+                console.error(`❌ Ayar güncellenemedi (${key}):`, error.message);
+                errorCount++;
+                errors.push({ key, error: error.message });
+            }
+        }
+        
+        console.log(`📊 Settings update sonucu: ${successCount} başarılı, ${errorCount} hatalı`);
+        
+        if (errorCount > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `${errorCount} adet ayar güncellenemedi`,
+                errors: errors,
+                successCount: successCount,
+                errorCount: errorCount
+            });
         }
         
         res.json({
             success: true,
-            message: 'Ayarlar başarıyla güncellendi'
+            message: `${successCount} adet ayar başarıyla güncellendi`,
+            successCount: successCount
         });
     } catch (error) {
-        console.error('Settings update error:', error);
+        console.error('❌ Settings update error:', error);
         res.status(500).json({
             success: false,
             message: 'Ayarlar güncellenirken hata oluştu',
@@ -1145,59 +1174,45 @@ app.get('/api/admin/services', authenticateAdmin, async (req, res) => {
     try {
         console.log('=== ADMIN SERVICES BAŞLADI ===');
         
+        // Supabase bağlantısını kontrol et
         if (!supabaseConnection.isConnected) {
-            console.log('Supabase bağlantısı yok, hardcoded hizmetler döndürülüyor');
-            const hardcodedServices = [
-                {
-                    _id: '1',
-                    name: 'Mobil Vinç Hizmetleri',
-                    slug: 'mobilvinchizmeti',
-                    description: 'Diyarbakır\'da yüksek kapasiteli mobil vinç kiralama hizmetleri',
-                    icon: 'fas fa-truck',
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                },
-                {
-                    _id: '2',
-                    name: 'İnşaat Kurulum Hizmetleri',
-                    slug: 'insaatkurulumu',
-                    description: 'İnşaat projeleriniz için kapsamlı kurulum hizmetleri',
-                    icon: 'fas fa-building',
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                },
-                {
-                    _id: '3',
-                    name: 'Petrol Kuyusu Hizmetleri',
-                    slug: 'petrolkuyuhizmeti',
-                    description: 'Petrol sahalarında profesyonel vinç hizmetleri',
-                    icon: 'fas fa-oil-can',
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                },
-                {
-                    _id: '4',
-                    name: 'Petrol ve İnşaat Sahası Hizmetleri',
-                    slug: 'petrolinsaatsahasi',
-                    description: 'Petrol ve inşaat sahalarında kapsamlı vinç hizmetleri',
-                    icon: 'fas fa-industry',
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                }
-            ];
-            console.log('Hardcoded hizmetler döndürülüyor:', hardcodedServices.length, 'adet');
-            return res.json(hardcodedServices);
+            console.log('❌ Supabase bağlantısı yok, bağlantı kurulmaya çalışılıyor...');
+            try {
+                await supabaseConnection.connect();
+                console.log('✅ Supabase bağlantısı kuruldu');
+            } catch (connError) {
+                console.error('❌ Supabase bağlantı hatası:', connError);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Veritabanı bağlantısı kurulamadı',
+                    error: connError.message
+                });
+            }
         }
         
         const serviceRepo = new ServiceRepository();
+        console.log('🔍 ServiceRepository.findAll() çağrılıyor...');
+        
         const services = await serviceRepo.findAll();
-        console.log('Hizmetler başarıyla yüklendi:', services.length);
+        console.log(`✅ Hizmetler başarıyla yüklendi: ${services.length} adet`);
+        
+        // Dönen verileri detaylı logla
+        if (services && services.length > 0) {
+            console.log('📋 Yüklenen hizmetler:');
+            services.forEach((service, index) => {
+                console.log(`  ${index + 1}. ID: ${service.id}, Title: ${service.title}, Slug: ${service.slug}, Active: ${service.is_active}`);
+            });
+        } else {
+            console.log('⚠️ Hiç hizmet bulunamadı');
+        }
+        
         res.json(services);
     } catch (error) {
-        console.error('Hizmetler hatası:', error);
+        console.error('❌ Hizmetler yükleme hatası:', error);
         res.status(500).json({
             success: false,
-            message: 'Hizmetler yüklenemedi'
+            message: 'Hizmetler yüklenemedi',
+            error: error.message
         });
     }
 });

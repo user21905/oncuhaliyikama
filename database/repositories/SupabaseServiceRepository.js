@@ -28,15 +28,28 @@ class SupabaseServiceRepository {
     async findAll() {
         try {
             const supabase = await this.connect();
+            console.log('🔍 Services findAll başlıyor...');
+            
             const { data, error } = await supabase
                 .from(this.tableName)
                 .select('*')
-                .order('created_at', { ascending: false });
+                .order('id', { ascending: false });
 
-            if (error) throw error;
+            if (error) {
+                console.error('❌ Services findAll error:', error);
+                throw error;
+            }
+            
+            console.log(`✅ Services findAll başarılı: ${data ? data.length : 0} adet hizmet bulundu`);
+            if (data && data.length > 0) {
+                data.forEach((service, index) => {
+                    console.log(`  ${index + 1}. ID: ${service.id}, Title: ${service.title}, Slug: ${service.slug}`);
+                });
+            }
+            
             return data || [];
         } catch (error) {
-            console.error('Service listesi alma hatası:', error);
+            console.error('❌ Service listesi alma hatası:', error);
             throw error;
         }
     }
@@ -61,16 +74,28 @@ class SupabaseServiceRepository {
     async findBySlug(slug) {
         try {
             const supabase = await this.connect();
+            console.log(`🔍 Service findBySlug: ${slug}`);
+            
             const { data, error } = await supabase
                 .from(this.tableName)
                 .select('*')
                 .eq('slug', slug)
-                .single();
+                .maybeSingle();
 
-            if (error) throw error;
+            if (error) {
+                console.error(`❌ Service findBySlug error (${slug}):`, error);
+                throw error;
+            }
+            
+            if (data) {
+                console.log(`✅ Service findBySlug bulundu: ${data.title} (ID: ${data.id})`);
+            } else {
+                console.log(`⚠️ Service findBySlug bulunamadı: ${slug}`);
+            }
+            
             return data;
         } catch (error) {
-            console.error('Service slug bulma hatası:', error);
+            console.error(`❌ Service slug bulma hatası (${slug}):`, error);
             throw error;
         }
     }

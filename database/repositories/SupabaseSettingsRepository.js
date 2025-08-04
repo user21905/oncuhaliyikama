@@ -94,16 +94,78 @@ class SupabaseSettingsRepository {
     async updateByKey(key, value) {
         try {
             const supabase = await this.connect();
-            const { data, error } = await supabase
+            console.log(`🔧 Settings güncelleme: key=${key}, value=${value}`);
+            
+            const { data, error, count } = await supabase
                 .from(this.tableName)
                 .update({ value: value })
                 .eq('key', key)
                 .select();
 
-            if (error) throw error;
+            if (error) {
+                console.error('❌ Settings updateByKey error:', error);
+                throw error;
+            }
+            
+            // Etkilenen satır sayısını kontrol et
+            if (!data || data.length === 0) {
+                console.error(`❌ Settings güncelleme başarısız: key="${key}" bulunamadı`);
+                throw new Error(`Settings key "${key}" bulunamadı`);
+            }
+            
+            console.log(`✅ Settings güncelleme başarılı: key=${key}, etkilenen satır=${data.length}`);
             return data[0];
         } catch (error) {
-            console.error('Settings key güncelleme hatası:', error);
+            console.error('❌ Settings key güncelleme hatası:', error);
+            throw error;
+        }
+    }
+
+    async updateMultiple(updates) {
+        try {
+            const supabase = await this.connect();
+            console.log(`🔧 Multiple settings güncelleme başlıyor: ${updates.length} adet`);
+            
+            let successCount = 0;
+            let errorCount = 0;
+            const errors = [];
+            
+            for (const update of updates) {
+                try {
+                    const { data, error } = await supabase
+                        .from(this.tableName)
+                        .update({ value: update.value })
+                        .eq('key', update.key)
+                        .select();
+                    
+                    if (error) {
+                        console.error(`❌ Settings güncelleme hatası (${update.key}):`, error);
+                        errorCount++;
+                        errors.push({ key: update.key, error: error.message });
+                    } else if (!data || data.length === 0) {
+                        console.error(`❌ Settings güncelleme başarısız (${update.key}): key bulunamadı`);
+                        errorCount++;
+                        errors.push({ key: update.key, error: 'Key bulunamadı' });
+                    } else {
+                        console.log(`✅ Settings güncelleme başarılı: ${update.key}`);
+                        successCount++;
+                    }
+                } catch (err) {
+                    console.error(`❌ Settings güncelleme exception (${update.key}):`, err);
+                    errorCount++;
+                    errors.push({ key: update.key, error: err.message });
+                }
+            }
+            
+            console.log(`📊 Multiple settings güncelleme sonucu: ${successCount} başarılı, ${errorCount} hatalı`);
+            
+            if (errorCount > 0) {
+                throw new Error(`${errorCount} adet ayar güncellenemedi: ${JSON.stringify(errors)}`);
+            }
+            
+            return { successCount, errorCount };
+        } catch (error) {
+            console.error('❌ Multiple settings güncelleme hatası:', error);
             throw error;
         }
     }
