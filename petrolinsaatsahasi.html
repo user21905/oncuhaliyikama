@@ -65,7 +65,7 @@
                 </div>
             </div>
             <div class="hero-image">
-                <img src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Petrol ve İnşaat Sahası" loading="lazy">
+                <img src="" alt="Petrol ve İnşaat Sahası" loading="lazy" id="service-hero-image">
             </div>
         </div>
     </section>
@@ -235,7 +235,7 @@
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success && data.data.service_petrolinsaatsahasi_img) {
-                        const heroImage = document.querySelector('.service-hero .hero-image img');
+                        const heroImage = document.getElementById('service-hero-image');
                         if (heroImage) {
                             heroImage.src = data.data.service_petrolinsaatsahasi_img;
                         }
