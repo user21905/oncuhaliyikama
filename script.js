@@ -653,7 +653,7 @@ function updateFooter(settings) {
     }
     
     if (footerPhone2) {
-        const phoneNumber2 = settings.contact_phone || settings.footer_phone2 || '0555 123 45 67';
+        const phoneNumber2 = settings.footer_phone2 || settings.contact_phone || '0555 123 45 67';
         footerPhone2.textContent = phoneNumber2;
         footerPhone2.href = `tel:${phoneNumber2}`;
     }
