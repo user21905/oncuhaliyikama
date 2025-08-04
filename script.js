@@ -483,7 +483,7 @@ function updateContactInfo(settings) {
     // Telefon numarası - tıklanabilir kartlar için
     const phoneCards = document.querySelectorAll('a[href^="tel:"]');
     phoneCards.forEach(element => {
-        const phoneNumber = settings.phone_number || '0555 123 45 67';
+        const phoneNumber = settings.contact_phone || settings.phone_number || '0555 123 45 67';
         element.href = `tel:${phoneNumber}`;
         const textElement = element.querySelector('.contact-text');
         if (textElement) {
@@ -495,7 +495,7 @@ function updateContactInfo(settings) {
     // Hizmet sayfalarının hero section'larındaki telefon numaralarını güncelle
     const heroPhoneButtons = document.querySelectorAll('.service-hero .hero-buttons a[href^="tel:"]');
     heroPhoneButtons.forEach(element => {
-        const phoneNumber = settings.phone_number || '0555 123 45 67';
+        const phoneNumber = settings.contact_phone || settings.phone_number || '0555 123 45 67';
         element.href = `tel:${phoneNumber}`;
         // Telefon numarasını buton içeriğinde güncelle
         const phoneText = element.textContent.trim();
@@ -508,7 +508,7 @@ function updateContactInfo(settings) {
     // CTA section'daki telefon numaralarını da güncelle
     const ctaPhoneButtons = document.querySelectorAll('.cta-section a[href^="tel:"]');
     ctaPhoneButtons.forEach(element => {
-        const phoneNumber = settings.phone_number || '0555 123 45 67';
+        const phoneNumber = settings.contact_phone || settings.phone_number || '0555 123 45 67';
         element.href = `tel:${phoneNumber}`;
         // Telefon numarasını buton içeriğinde güncelle
         const phoneText = element.textContent.trim();
@@ -521,7 +521,7 @@ function updateContactInfo(settings) {
     // WhatsApp numarası - tıklanabilir kartlar için
     const whatsappCards = document.querySelectorAll('a[href*="wa.me"]');
     whatsappCards.forEach(element => {
-        const whatsappNumber = settings.whatsapp_number || settings.phone_number || '0555 123 45 67';
+        const whatsappNumber = settings.contact_whatsapp || settings.whatsapp_number || settings.phone_number || '0555 123 45 67';
         // Numarayı temizle: boşlukları, tireleri ve parantezleri kaldır
         const cleanNumber = whatsappNumber.replace(/[\s\-\(\)]/g, '');
         // Türkiye ülke kodu ekle (eğer yoksa)
@@ -541,7 +541,7 @@ function updateContactInfo(settings) {
     // E-posta
     const emailElements = document.querySelectorAll('a[href^="mailto:"]');
     emailElements.forEach(element => {
-        const email = settings.email_address || 'info@bismilvinc.com';
+        const email = settings.contact_email || settings.email_address || 'info@bismilvinc.com';
         element.href = `mailto:${email}`;
         element.textContent = email;
         console.log('E-posta güncellendi:', email);
@@ -552,7 +552,7 @@ function updateContactInfo(settings) {
     addressElements.forEach(element => {
         const text = element.textContent.trim();
         if (text.includes('Bismil') || text.includes('Diyarbakır') || text.includes('Türkiye')) {
-            const address = settings.address || 'Bismil, Diyarbakır';
+            const address = settings.contact_address || settings.address || 'Bismil, Diyarbakır';
             element.textContent = address;
             console.log('Adres güncellendi:', address);
         }
@@ -563,7 +563,7 @@ function updateContactInfo(settings) {
     workingHoursElements.forEach(element => {
         const text = element.textContent.trim();
         if (text.includes('7/24') || text.includes('Hizmet') || text.includes('Çalışma')) {
-            const workingHours = settings.working_hours || '7/24 Hizmet';
+            const workingHours = settings.footer_working_hours || settings.working_hours || '7/24 Hizmet';
             element.textContent = workingHours;
             console.log('Çalışma saatleri güncellendi:', workingHours);
         }
@@ -595,7 +595,7 @@ function updateContactInfo(settings) {
             console.log('Footer adres güncellendi:', address);
         }
         if (text.includes('7/24') || text.includes('Hizmet')) {
-            const workingHours = settings.working_hours || '7/24 Hizmet';
+            const workingHours = settings.footer_working_hours || settings.working_hours || '7/24 Hizmet';
             element.textContent = element.textContent.replace(/7\/24.*Hizmet.*/, workingHours);
             console.log('Footer çalışma saatleri güncellendi:', workingHours);
         }
