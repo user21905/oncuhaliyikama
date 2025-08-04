@@ -1500,7 +1500,7 @@ class AdminPanel {
         }
         
         try {
-            const response = await fetch('/api/admin/footer/update', {
+            const response = await fetch('/api/admin/settings/update', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -480,16 +480,71 @@ async function loadDynamicImages() {
 function updateContactInfo(settings) {
     console.log('İletişim bilgileri güncelleniyor:', settings);
     
-    // Telefon numarası - tıklanabilir kartlar için
-    const phoneCards = document.querySelectorAll('a[href^="tel:"]');
-    phoneCards.forEach(element => {
-        const phoneNumber = settings.contact_phone || settings.phone_number || '0555 123 45 67';
-        element.href = `tel:${phoneNumber}`;
-        const textElement = element.querySelector('.contact-text');
-        if (textElement) {
-            textElement.textContent = phoneNumber;
+    // Ana sayfa iletişim bölümündeki tüm contact-text elementlerini güncelle
+    const contactTextElements = document.querySelectorAll('.contact-text');
+    contactTextElements.forEach(element => {
+        const parentContactItem = element.closest('.contact-item');
+        if (!parentContactItem) return;
+        
+        // Hangi tür iletişim bilgisi olduğunu belirle
+        const icon = parentContactItem.querySelector('i');
+        if (!icon) return;
+        
+        const iconClass = icon.className;
+        
+        if (iconClass.includes('fa-phone')) {
+            // Telefon numarası
+            const phoneNumber = settings.contact_phone || settings.phone_number || '0555 123 45 67';
+            element.textContent = phoneNumber;
+            
+            // Parent link'i güncelle
+            const parentLink = parentContactItem.closest('a[href^="tel:"]');
+            if (parentLink) {
+                parentLink.href = `tel:${phoneNumber}`;
+            }
+            console.log('Telefon güncellendi:', phoneNumber);
+            
+        } else if (iconClass.includes('fa-whatsapp')) {
+            // WhatsApp numarası
+            const whatsappNumber = settings.contact_whatsapp || settings.whatsapp_number || settings.phone_number || '0555 123 45 67';
+            element.textContent = whatsappNumber;
+            
+            // Parent link'i güncelle
+            const parentLink = parentContactItem.closest('a[href*="wa.me"]');
+            if (parentLink) {
+                const cleanNumber = whatsappNumber.replace(/[\s\-\(\)]/g, '');
+                const finalNumber = cleanNumber.startsWith('90') ? cleanNumber : 
+                                   cleanNumber.startsWith('0') ? '90' + cleanNumber.substring(1) : 
+                                   '90' + cleanNumber;
+                const message = encodeURIComponent('Merhaba! Bismil Vinç hizmetleri hakkında bilgi almak istiyorum.');
+                parentLink.href = `https://wa.me/${finalNumber}?text=${message}`;
+            }
+            console.log('WhatsApp güncellendi:', whatsappNumber);
+            
+        } else if (iconClass.includes('fa-envelope')) {
+            // E-posta
+            const email = settings.contact_email || settings.email_address || 'info@bismilvinc.com';
+            element.textContent = email;
+            
+            // Parent link'i güncelle
+            const parentLink = parentContactItem.closest('a[href^="mailto:"]');
+            if (parentLink) {
+                parentLink.href = `mailto:${email}`;
+            }
+            console.log('E-posta güncellendi:', email);
+            
+        } else if (iconClass.includes('fa-map-marker-alt')) {
+            // Adres
+            const address = settings.contact_address || settings.address || 'Bismil, Diyarbakır';
+            element.textContent = address;
+            console.log('Adres güncellendi:', address);
+            
+        } else if (iconClass.includes('fa-clock')) {
+            // Çalışma saatleri
+            const workingHours = settings.footer_working_hours || settings.working_hours || '7/24 Hizmet';
+            element.textContent = workingHours;
+            console.log('Çalışma saatleri güncellendi:', workingHours);
         }
-        console.log('Telefon kartı güncellendi:', phoneNumber);
     });
 
     // Hizmet sayfalarının hero section'larındaki telefon numaralarını güncelle
@@ -518,57 +573,6 @@ function updateContactInfo(settings) {
         console.log('CTA section telefon güncellendi:', phoneNumber);
     });
 
-    // WhatsApp numarası - tıklanabilir kartlar için
-    const whatsappCards = document.querySelectorAll('a[href*="wa.me"]');
-    whatsappCards.forEach(element => {
-        const whatsappNumber = settings.contact_whatsapp || settings.whatsapp_number || settings.phone_number || '0555 123 45 67';
-        // Numarayı temizle: boşlukları, tireleri ve parantezleri kaldır
-        const cleanNumber = whatsappNumber.replace(/[\s\-\(\)]/g, '');
-        // Türkiye ülke kodu ekle (eğer yoksa)
-        const finalNumber = cleanNumber.startsWith('90') ? cleanNumber : 
-                           cleanNumber.startsWith('0') ? '90' + cleanNumber.substring(1) : 
-                           '90' + cleanNumber;
-        // WhatsApp sohbetine doğrudan yönlendir
-        const message = encodeURIComponent('Merhaba! Bismil Vinç hizmetleri hakkında bilgi almak istiyorum.');
-        element.href = `https://wa.me/${finalNumber}?text=${message}`;
-        const textElement = element.querySelector('.contact-text');
-        if (textElement) {
-            textElement.textContent = whatsappNumber;
-        }
-        console.log('WhatsApp kartı güncellendi:', whatsappNumber, '->', finalNumber);
-    });
-
-    // E-posta
-    const emailElements = document.querySelectorAll('a[href^="mailto:"]');
-    emailElements.forEach(element => {
-        const email = settings.contact_email || settings.email_address || 'info@bismilvinc.com';
-        element.href = `mailto:${email}`;
-        element.textContent = email;
-        console.log('E-posta güncellendi:', email);
-    });
-
-    // Adres - daha spesifik seçiciler
-    const addressElements = document.querySelectorAll('.contact-details p');
-    addressElements.forEach(element => {
-        const text = element.textContent.trim();
-        if (text.includes('Bismil') || text.includes('Diyarbakır') || text.includes('Türkiye')) {
-            const address = settings.contact_address || settings.address || 'Bismil, Diyarbakır';
-            element.textContent = address;
-            console.log('Adres güncellendi:', address);
-        }
-    });
-
-    // Çalışma saatleri - daha spesifik seçiciler
-    const workingHoursElements = document.querySelectorAll('.contact-details p');
-    workingHoursElements.forEach(element => {
-        const text = element.textContent.trim();
-        if (text.includes('7/24') || text.includes('Hizmet') || text.includes('Çalışma')) {
-            const workingHours = settings.footer_working_hours || settings.working_hours || '7/24 Hizmet';
-            element.textContent = workingHours;
-            console.log('Çalışma saatleri güncellendi:', workingHours);
-        }
-    });
-
     // Google Maps iframe güncelle
     const mapIframe = document.querySelector('iframe[src*="google.com/maps"]');
     if (mapIframe && settings.map_latitude && settings.map_longitude) {
@@ -576,30 +580,6 @@ function updateContactInfo(settings) {
         mapIframe.src = newMapUrl;
         console.log('Harita güncellendi:', settings.map_latitude, settings.map_longitude);
     }
-    
-    // Footer'daki iletişim bilgilerini güncelle
-    const footerPhoneElements = document.querySelectorAll('.footer-section a[href^="tel:"]');
-    footerPhoneElements.forEach(element => {
-        const phoneNumber = settings.contact_phone || settings.footer_phone || settings.phone_number || '0555 123 45 67';
-        element.href = `tel:${phoneNumber}`;
-        element.textContent = phoneNumber;
-        console.log('Footer telefon güncellendi:', phoneNumber);
-    });
-
-    const footerAddressElements = document.querySelectorAll('.footer-section p');
-    footerAddressElements.forEach(element => {
-        const text = element.textContent.trim();
-        if (text.includes('Bismil') || text.includes('Diyarbakır')) {
-            const address = settings.address || 'Bismil, Diyarbakır';
-            element.textContent = element.textContent.replace(/Bismil.*Diyarbakır.*/, address);
-            console.log('Footer adres güncellendi:', address);
-        }
-        if (text.includes('7/24') || text.includes('Hizmet')) {
-            const workingHours = settings.footer_working_hours || settings.working_hours || '7/24 Hizmet';
-            element.textContent = element.textContent.replace(/7\/24.*Hizmet.*/, workingHours);
-            console.log('Footer çalışma saatleri güncellendi:', workingHours);
-        }
-    });
     
     // Footer'ı güncelle
     updateFooter(settings);
