@@ -476,16 +476,16 @@ async function loadDynamicImages() {
     console.log('=== loadDynamicImages tamamlandı ===');
 }
 
-// İletişim bilgilerini güncelle
+// İletişim bilgilerini güncelle (sadece anasayfa contact section için)
 function updateContactInfo(settings) {
     console.log('=== updateContactInfo başladı ===');
     console.log('Gelen settings:', settings);
     
-    // Telefon numarasını güncelle
-    const phoneElements = document.querySelectorAll('.contact-text');
-    console.log('Bulunan contact-text elementleri:', phoneElements.length);
+    // Sadece anasayfa contact section'daki telefon numaralarını güncelle
+    const contactTextElements = document.querySelectorAll('.contact-text');
+    console.log('Bulunan contact-text elementleri:', contactTextElements.length);
     
-    phoneElements.forEach((element, index) => {
+    contactTextElements.forEach((element, index) => {
         const parentContactItem = element.closest('.contact-item');
         if (!parentContactItem) {
             console.log(`Element ${index}: parent contact-item bulunamadı`);
@@ -588,9 +588,6 @@ function updateContactInfo(settings) {
         console.log('Harita güncellendi:', settings.map_latitude, settings.map_longitude);
     }
     
-    // Footer'ı güncelle
-    updateFooter(settings);
-
     console.log('=== updateContactInfo tamamlandı ===');
 }
 
@@ -610,6 +607,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Footer'ı güncelle
 function updateFooter(settings) {
+    console.log('=== updateFooter başladı ===');
+    console.log('Footer için gelen settings:', settings);
+    
     // Şirket bilgileri
     const companyName = document.getElementById('footer-company-name');
     const description = document.getElementById('footer-description');
@@ -646,20 +646,30 @@ function updateFooter(settings) {
     const footerAddress = document.getElementById('footer-address');
     const footerWorkingHours = document.getElementById('footer-working-hours');
     
+    console.log('Footer telefon ayarları:');
+    console.log('- settings.contact_phone:', settings.contact_phone);
+    console.log('- settings.footer_phone:', settings.footer_phone);
+    console.log('- settings.footer_phone2:', settings.footer_phone2);
+    console.log('- settings.contact_whatsapp:', settings.contact_whatsapp);
+    console.log('- settings.footer_whatsapp:', settings.footer_whatsapp);
+    
     if (footerPhone) {
         const phoneNumber = settings.contact_phone || settings.footer_phone || '0555 123 45 67';
+        console.log('Footer Phone 1 güncelleniyor:', phoneNumber);
         footerPhone.textContent = phoneNumber;
         footerPhone.href = `tel:${phoneNumber}`;
     }
     
     if (footerPhone2) {
         const phoneNumber2 = settings.footer_phone2 || settings.contact_phone || '0555 123 45 67';
+        console.log('Footer Phone 2 güncelleniyor:', phoneNumber2);
         footerPhone2.textContent = phoneNumber2;
         footerPhone2.href = `tel:${phoneNumber2}`;
     }
     
     if (footerWhatsApp) {
         const whatsappNumber = settings.contact_whatsapp || settings.footer_whatsapp || '0555 123 45 67';
+        console.log('Footer WhatsApp güncelleniyor:', whatsappNumber);
         footerWhatsApp.textContent = whatsappNumber;
         // WhatsApp link'ini temizle ve formatla
         const cleanNumber = whatsappNumber.replace(/[\s\-\(\)]/g, '');
@@ -682,5 +692,5 @@ function updateFooter(settings) {
     const copyright = document.getElementById('footer-copyright');
     if (copyright) copyright.textContent = settings.footer_copyright || '© 2024 Bismil Vinç. Tüm hakları saklıdır.';
 
-    console.log('Footer güncellendi');
+    console.log('=== updateFooter tamamlandı ===');
 } 
