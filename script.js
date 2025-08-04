@@ -478,35 +478,44 @@ async function loadDynamicImages() {
 
 // İletişim bilgilerini güncelle
 function updateContactInfo(settings) {
-    console.log('İletişim bilgileri güncelleniyor:', settings);
+    console.log('=== updateContactInfo başladı ===');
+    console.log('Gelen settings:', settings);
     
-    // Ana sayfa iletişim bölümündeki tüm contact-text elementlerini güncelle
-    const contactTextElements = document.querySelectorAll('.contact-text');
-    contactTextElements.forEach(element => {
+    // Telefon numarasını güncelle
+    const phoneElements = document.querySelectorAll('.contact-text');
+    console.log('Bulunan contact-text elementleri:', phoneElements.length);
+    
+    phoneElements.forEach((element, index) => {
         const parentContactItem = element.closest('.contact-item');
-        if (!parentContactItem) return;
+        if (!parentContactItem) {
+            console.log(`Element ${index}: parent contact-item bulunamadı`);
+            return;
+        }
         
-        // Hangi tür iletişim bilgisi olduğunu belirle
         const icon = parentContactItem.querySelector('i');
-        if (!icon) return;
+        if (!icon) {
+            console.log(`Element ${index}: icon bulunamadı`);
+            return;
+        }
         
         const iconClass = icon.className;
+        console.log(`Element ${index}: icon class = ${iconClass}`);
         
         if (iconClass.includes('fa-phone')) {
-            // Telefon numarası
-            const phoneNumber = settings.contact_phone || settings.phone_number || '0555 123 45 67';
+            const phoneNumber = settings.contact_phone || '0555 123 45 67';
+            console.log(`Element ${index}: Telefon güncelleniyor: ${element.textContent} -> ${phoneNumber}`);
             element.textContent = phoneNumber;
             
             // Parent link'i güncelle
             const parentLink = parentContactItem.closest('a[href^="tel:"]');
             if (parentLink) {
                 parentLink.href = `tel:${phoneNumber}`;
+                console.log(`Element ${index}: Telefon link güncellendi: ${parentLink.href}`);
             }
-            console.log('Telefon güncellendi:', phoneNumber);
             
         } else if (iconClass.includes('fa-whatsapp')) {
-            // WhatsApp numarası
-            const whatsappNumber = settings.contact_whatsapp || settings.whatsapp_number || settings.phone_number || '0555 123 45 67';
+            const whatsappNumber = settings.contact_whatsapp || '0555 123 45 67';
+            console.log(`Element ${index}: WhatsApp güncelleniyor: ${element.textContent} -> ${whatsappNumber}`);
             element.textContent = whatsappNumber;
             
             // Parent link'i güncelle
@@ -518,39 +527,37 @@ function updateContactInfo(settings) {
                                    '90' + cleanNumber;
                 const message = encodeURIComponent('Merhaba! Bismil Vinç hizmetleri hakkında bilgi almak istiyorum.');
                 parentLink.href = `https://wa.me/${finalNumber}?text=${message}`;
+                console.log(`Element ${index}: WhatsApp link güncellendi: ${parentLink.href}`);
             }
-            console.log('WhatsApp güncellendi:', whatsappNumber);
             
         } else if (iconClass.includes('fa-envelope')) {
-            // E-posta
-            const email = settings.contact_email || settings.email_address || 'info@bismilvinc.com';
+            const email = settings.contact_email || 'info@bismilvinc.com';
+            console.log(`Element ${index}: E-posta güncelleniyor: ${element.textContent} -> ${email}`);
             element.textContent = email;
             
             // Parent link'i güncelle
             const parentLink = parentContactItem.closest('a[href^="mailto:"]');
             if (parentLink) {
                 parentLink.href = `mailto:${email}`;
+                console.log(`Element ${index}: E-posta link güncellendi: ${parentLink.href}`);
             }
-            console.log('E-posta güncellendi:', email);
             
         } else if (iconClass.includes('fa-map-marker-alt')) {
-            // Adres
-            const address = settings.contact_address || settings.address || 'Bismil, Diyarbakır';
+            const address = settings.contact_address || 'Bismil, Diyarbakır';
+            console.log(`Element ${index}: Adres güncelleniyor: ${element.textContent} -> ${address}`);
             element.textContent = address;
-            console.log('Adres güncellendi:', address);
             
         } else if (iconClass.includes('fa-clock')) {
-            // Çalışma saatleri
-            const workingHours = settings.footer_working_hours || settings.working_hours || '7/24 Hizmet';
+            const workingHours = settings.footer_working_hours || '7/24 Hizmet';
+            console.log(`Element ${index}: Çalışma saatleri güncelleniyor: ${element.textContent} -> ${workingHours}`);
             element.textContent = workingHours;
-            console.log('Çalışma saatleri güncellendi:', workingHours);
         }
     });
 
     // Hizmet sayfalarının hero section'larındaki telefon numaralarını güncelle
     const heroPhoneButtons = document.querySelectorAll('.service-hero .hero-buttons a[href^="tel:"]');
     heroPhoneButtons.forEach(element => {
-        const phoneNumber = settings.contact_phone || settings.phone_number || '0555 123 45 67';
+        const phoneNumber = settings.contact_phone || '0555 123 45 67';
         element.href = `tel:${phoneNumber}`;
         // Telefon numarasını buton içeriğinde güncelle
         const phoneText = element.textContent.trim();
@@ -563,7 +570,7 @@ function updateContactInfo(settings) {
     // CTA section'daki telefon numaralarını da güncelle
     const ctaPhoneButtons = document.querySelectorAll('.cta-section a[href^="tel:"]');
     ctaPhoneButtons.forEach(element => {
-        const phoneNumber = settings.contact_phone || settings.phone_number || '0555 123 45 67';
+        const phoneNumber = settings.contact_phone || '0555 123 45 67';
         element.href = `tel:${phoneNumber}`;
         // Telefon numarasını buton içeriğinde güncelle
         const phoneText = element.textContent.trim();
@@ -584,7 +591,7 @@ function updateContactInfo(settings) {
     // Footer'ı güncelle
     updateFooter(settings);
 
-    console.log('İletişim bilgileri güncelleme tamamlandı');
+    console.log('=== updateContactInfo tamamlandı ===');
 }
 
 // Hizmet görselini güncelle
