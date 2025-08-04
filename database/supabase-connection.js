@@ -17,6 +17,7 @@ class SupabaseConnection {
 
             const supabaseUrl = process.env.SUPABASE_URL;
             const supabaseKey = process.env.SUPABASE_ANON_KEY;
+            const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
             if (!supabaseUrl || !supabaseKey) {
                 throw new Error('SUPABASE_URL ve SUPABASE_ANON_KEY environment variables eksik');
@@ -24,7 +25,11 @@ class SupabaseConnection {
 
             console.log('🔗 Supabase bağlantısı kuruluyor...');
             
-            this.client = createClient(supabaseUrl, supabaseKey);
+            // Admin işlemleri için service role key kullan, yoksa anon key kullan
+            const keyToUse = serviceRoleKey || supabaseKey;
+            console.log('🔑 Kullanılan key türü:', serviceRoleKey ? 'Service Role Key' : 'Anon Key');
+            
+            this.client = createClient(supabaseUrl, keyToUse);
             
             // Bağlantıyı test et
             const { data, error } = await this.client.from('settings').select('*').limit(1);
@@ -51,6 +56,18 @@ class SupabaseConnection {
             throw new Error('Supabase bağlantısı kurulmamış. Önce connect() metodunu çağırın.');
         }
         return this.client;
+    }
+
+    getAdminClient() {
+        const supabaseUrl = process.env.SUPABASE_URL;
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        
+        if (!supabaseUrl || !serviceRoleKey) {
+            throw new Error('SUPABASE_URL ve SUPABASE_SERVICE_ROLE_KEY environment variables eksik');
+        }
+        
+        console.log('🔑 Admin client oluşturuluyor (Service Role Key ile)');
+        return createClient(supabaseUrl, serviceRoleKey);
     }
 
     async disconnect() {

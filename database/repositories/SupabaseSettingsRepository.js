@@ -96,7 +96,17 @@ class SupabaseSettingsRepository {
             const supabase = await this.connect();
             console.log(`🔧 Settings güncelleme: key=${key}, value=${value}`);
             
-            const { data, error, count } = await supabase
+            // Admin işlemleri için admin client kullan
+            let client = supabase;
+            try {
+                const adminClient = supabaseConnection.getAdminClient();
+                console.log('🔑 Admin client kullanılıyor');
+                client = adminClient;
+            } catch (adminError) {
+                console.log('⚠️ Admin client kullanılamıyor, normal client kullanılıyor:', adminError.message);
+            }
+            
+            const { data, error, count } = await client
                 .from(this.tableName)
                 .update({ value: value })
                 .eq('key', key)
@@ -126,13 +136,23 @@ class SupabaseSettingsRepository {
             const supabase = await this.connect();
             console.log(`🔧 Multiple settings güncelleme başlıyor: ${updates.length} adet`);
             
+            // Admin işlemleri için admin client kullan
+            let client = supabase;
+            try {
+                const adminClient = supabaseConnection.getAdminClient();
+                console.log('🔑 Admin client kullanılıyor (multiple update)');
+                client = adminClient;
+            } catch (adminError) {
+                console.log('⚠️ Admin client kullanılamıyor, normal client kullanılıyor:', adminError.message);
+            }
+            
             let successCount = 0;
             let errorCount = 0;
             const errors = [];
             
             for (const update of updates) {
                 try {
-                    const { data, error } = await supabase
+                    const { data, error } = await client
                         .from(this.tableName)
                         .update({ value: update.value })
                         .eq('key', update.key)
