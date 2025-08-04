@@ -580,7 +580,7 @@ function updateContactInfo(settings) {
     // Footer'daki iletişim bilgilerini güncelle
     const footerPhoneElements = document.querySelectorAll('.footer-section a[href^="tel:"]');
     footerPhoneElements.forEach(element => {
-        const phoneNumber = settings.phone_number || '0555 123 45 67';
+        const phoneNumber = settings.contact_phone || settings.footer_phone || settings.phone_number || '0555 123 45 67';
         element.href = `tel:${phoneNumber}`;
         element.textContent = phoneNumber;
         console.log('Footer telefon güncellendi:', phoneNumber);
@@ -660,19 +660,19 @@ function updateFooter(settings) {
     const footerWorkingHours = document.getElementById('footer-working-hours');
     
     if (footerPhone) {
-        const phoneNumber = settings.footer_phone || '0555 123 45 67';
+        const phoneNumber = settings.contact_phone || settings.footer_phone || '0555 123 45 67';
         footerPhone.textContent = phoneNumber;
         footerPhone.href = `tel:${phoneNumber}`;
     }
     
     if (footerPhone2) {
-        const phoneNumber2 = settings.footer_phone2 || '0555 123 45 67';
+        const phoneNumber2 = settings.contact_phone || settings.footer_phone2 || '0555 123 45 67';
         footerPhone2.textContent = phoneNumber2;
         footerPhone2.href = `tel:${phoneNumber2}`;
     }
     
     if (footerWhatsApp) {
-        const whatsappNumber = settings.footer_whatsapp || '0555 123 45 67';
+        const whatsappNumber = settings.contact_whatsapp || settings.footer_whatsapp || '0555 123 45 67';
         footerWhatsApp.textContent = whatsappNumber;
         // WhatsApp link'ini temizle ve formatla
         const cleanNumber = whatsappNumber.replace(/[\s\-\(\)]/g, '');
@@ -683,12 +683,12 @@ function updateFooter(settings) {
     }
     
     if (footerEmail) {
-        const emailAddress = settings.footer_email || 'info@bismilvinc.com';
+        const emailAddress = settings.contact_email || settings.footer_email || 'info@bismilvinc.com';
         footerEmail.textContent = emailAddress;
         footerEmail.href = `mailto:${emailAddress}`;
     }
     
-    if (footerAddress) footerAddress.textContent = settings.footer_address || 'Bismil, Diyarbakır';
+    if (footerAddress) footerAddress.textContent = settings.contact_address || settings.footer_address || 'Bismil, Diyarbakır';
     if (footerWorkingHours) footerWorkingHours.textContent = settings.footer_working_hours || '7/24 Hizmet';
 
     // Copyright
