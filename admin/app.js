@@ -763,13 +763,13 @@ class AdminPanel {
     populateSettingsForm(settings) {
         // Form alanlarını doldur
         const formFields = {
-            'siteTitle': settings.site_title || 'Bismil Vinç',
-            'siteDescription': settings.site_description || '',
-            'phoneNumber': settings.phone_number || '0555 123 45 67',
-            'whatsappNumber': settings.whatsapp_number || '0555 123 45 67',
-            'emailAddress': settings.email_address || 'info@bismilvinc.com',
-            'address': settings.address || 'Bismil, Diyarbakır',
-            'workingHours': settings.working_hours || '7/24 Hizmet',
+            'siteTitle': settings.navbar_company_name || 'Bismil Vinç',
+            'siteDescription': settings.footer_description || '',
+            'phoneNumber': settings.contact_phone || '0555 123 45 67',
+            'whatsappNumber': settings.contact_whatsapp || '0555 123 45 67',
+            'emailAddress': settings.contact_email || 'info@bismilvinc.com',
+            'address': settings.contact_address || 'Bismil, Diyarbakır',
+            'workingHours': settings.footer_working_hours || '7/24 Hizmet',
             'mapLatitude': settings.map_latitude || '37.842249',
             'mapLongitude': settings.map_longitude || '40.669449'
         };
@@ -787,13 +787,13 @@ class AdminPanel {
         console.log('🔧 Settings submit başladı');
         
         const formData = {
-            site_title: document.getElementById('siteTitle').value,
-            site_description: document.getElementById('siteDescription').value,
-            phone_number: document.getElementById('phoneNumber').value,
-            whatsapp_number: document.getElementById('whatsappNumber').value,
-            email_address: document.getElementById('emailAddress').value,
-            address: document.getElementById('address').value,
-            working_hours: document.getElementById('workingHours').value,
+            navbar_company_name: document.getElementById('siteTitle').value,
+            footer_description: document.getElementById('siteDescription').value,
+            contact_phone: document.getElementById('phoneNumber').value,
+            contact_whatsapp: document.getElementById('whatsappNumber').value,
+            contact_email: document.getElementById('emailAddress').value,
+            contact_address: document.getElementById('address').value,
+            footer_working_hours: document.getElementById('workingHours').value,
             map_latitude: document.getElementById('mapLatitude').value,
             map_longitude: document.getElementById('mapLongitude').value
         };

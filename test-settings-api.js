@@ -29,11 +29,11 @@ async function testSettingsAPI() {
     
     // Settings update test
     const testSettings = {
-        site_title: 'Test Site Title - ' + new Date().toISOString(),
-        site_description: 'Test Site Description - ' + new Date().toISOString(),
-        phone_number: '+90 555 123 45 67',
-        email_address: 'test@bismilvinc.com',
-        address: 'Test Address - ' + new Date().toISOString()
+        navbar_company_name: 'Test Site Title - ' + new Date().toISOString(),
+        footer_description: 'Test Site Description - ' + new Date().toISOString(),
+        contact_phone: '+90 555 123 45 67',
+        contact_email: 'test@bismilvinc.com',
+        contact_address: 'Test Address - ' + new Date().toISOString()
     };
     
     console.log('📋 Test edilecek ayarlar:', testSettings);
