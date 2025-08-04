@@ -626,7 +626,7 @@ app.post('/api/admin/media/remove', authenticateAdmin, async (req, res) => {
 // Health check
 app.get('/api/health', async (req, res) => {
     try {
-        const dbHealth = await databaseConnection.healthCheck();
+        const dbHealth = await supabaseConnection.healthCheck();
         
         res.json({
             success: true,
@@ -930,7 +930,7 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
 
                 // Medya sayısını al (settings'den)
                 const settingsRepo = new SupabaseSettingsRepository();
-                const settings = await settingsRepo.getSettingsAsObject();
+                const settings = await settingsRepo.getSettings();
                 const mediaCount = Object.keys(settings).filter(key => 
                     key.includes('_img') || key.includes('_logo') || key.includes('_bg')
                 ).length;
@@ -1047,7 +1047,7 @@ app.get('/api/admin/settings', authenticateAdmin, async (req, res) => {
         }
         
         const settingsRepo = new SupabaseSettingsRepository();
-        const settings = await settingsRepo.getSettingsAsObject();
+        const settings = await settingsRepo.getSettings();
         console.log('Ayarlar başarıyla yüklendi');
         res.json(settings);
     } catch (error) {
@@ -1554,9 +1554,10 @@ const startServer = async () => {
         // Default admin kullanıcısını oluştur (sadece Supabase bağlıysa)
         if (supabaseConnection.isConnected) {
             try {
-                const userRepo = new SupabaseUserRepository();
-                await userRepo.initializeDefaultAdmin();
-                console.log('✅ Default admin kullanıcısı kontrol edildi');
+                // Supabase Auth kullandığımız için custom users tablosuna gerek yok
+                // const userRepo = new SupabaseUserRepository();
+                // await userRepo.initializeDefaultAdmin();
+                console.log('✅ Default admin kullanıcısı kontrol edildi (Supabase Auth kullanılıyor)');
             } catch (adminError) {
                 console.warn('⚠️ Default admin oluşturulamadı:', adminError.message);
             }
