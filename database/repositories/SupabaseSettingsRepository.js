@@ -319,7 +319,11 @@ class SupabaseSettingsRepository {
                 contact_phone: '0555 123 45 67',
                 contact_whatsapp: '0555 123 45 67',
                 contact_email: 'info@bismilvinc.com',
-                contact_address: 'Bismil, Diyarbakır'
+                contact_address: 'Bismil, Diyarbakır',
+                
+                // Harita koordinatları
+                map_latitude: '37.842249',
+                map_longitude: '40.669449'
             };
             
             // Veritabanından gelen ayarları override et
