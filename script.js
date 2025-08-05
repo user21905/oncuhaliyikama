@@ -333,8 +333,17 @@ async function loadDynamicImages() {
         console.log('=== loadDynamicImages başladı ===');
         console.log('Mevcut URL:', window.location.href);
         
-        const response = await fetch('/api/settings');
+        // Cache-busting ile API çağrısı
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/api/settings?t=${timestamp}`, {
+            method: 'GET',
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            }
+        });
         console.log('API response status:', response.status);
+        console.log('API response headers:', response.headers);
         
         if (response.ok) {
             const data = await response.json();
@@ -343,10 +352,11 @@ async function loadDynamicImages() {
             if (data.success && data.data) {
                 const settings = data.data;
                 console.log('Settings object:', settings);
+                console.log('All settings keys:', Object.keys(settings));
                 
                 // Anasayfa hero arka planı
                 if (settings.homepage_hero_bg) {
-                    console.log('Hero background URL bulundu:', settings.homepage_hero_bg);
+                    console.log('✅ Hero background URL bulundu:', settings.homepage_hero_bg);
                     const heroSection = document.getElementById('hero-section');
                     console.log('Hero section element:', heroSection);
                     
@@ -382,16 +392,14 @@ async function loadDynamicImages() {
                             backgroundPosition: heroSection.style.backgroundPosition
                         });
                         
-                        console.log('Hero background ayarlandı');
+                        console.log('✅ Hero background başarıyla ayarlandı');
                     } else {
                         console.log('Hero section bulunamadı (muhtemelen hizmet sayfasındayız)');
                     }
                 } else {
-                    console.log('Hero background URL bulunamadı');
+                    console.log('⚠️ Hero background URL bulunamadı');
                     console.log('Mevcut settings keys:', Object.keys(settings));
-                    
-                    // Hazır fotoğraf kaldırıldı - sadece Cloudinary'den gelen fotoğraflar kullanılacak
-                    console.log('Hero background URL bulunamadı, hazır fotoğraf kullanılmıyor');
+                    console.log('homepage_hero_bg değeri:', settings.homepage_hero_bg);
                 }
                 
                 // Navbar logo yükleme
