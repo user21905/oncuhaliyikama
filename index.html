@@ -146,18 +146,21 @@
         </div>
     </nav>
 
-    <!-- Home Section -->
-    <section id="hero-section" class="home-section">
-        <div class="container">
-            <div class="home-content">
-                <h1 class="home-title">Bismil Vinç - Diyarbakır Mobil Vinç Hizmetleri</h1>
-                <p class="home-subtitle">Diyarbakır'da 16 yıllık deneyimle profesyonel mobil vinç kiralama ve şantiye kaldırma hizmetleri</p>
-                <div class="home-buttons">
-                    <a href="#contact" class="btn btn-primary">Diyarbakır Vinç Teklifi Alın</a>
-                    <a href="#services" class="btn btn-secondary">Mobil Vinç Hizmetlerimiz</a>
-                </div>
+    <!-- Hero Section -->
+    <section id="hero-section" class="hero">
+        <div class="hero-content">
+            <h1>Bismil Vinç - Diyarbakır Mobil Vinç Hizmetleri</h1>
+            <p>16 yıllık deneyimle profesyonel mobil vinç kiralama ve şantiye kaldırma hizmetleri</p>
+            <div class="hero-buttons">
+                <a href="#services" class="btn btn-primary">Hizmetlerimiz</a>
+                <a href="#contact" class="btn btn-secondary">İletişim</a>
             </div>
         </div>
+        
+        <!-- Hidden refresh button for testing (only visible in development) -->
+        <button id="refresh-bg-btn" style="position: fixed; top: 10px; right: 10px; z-index: 9999; background: rgba(0,0,0,0.7); color: white; border: none; padding: 5px 10px; border-radius: 3px; font-size: 12px; display: none;" onclick="refreshBackgroundImage()">
+            🔄 BG Refresh
+        </button>
     </section>
 
     <!-- Services Section -->
