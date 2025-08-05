@@ -465,6 +465,12 @@ async function loadDynamicImages() {
                         }
                     }
                 });
+
+                // İletişim bilgilerini güncelle
+                updateContactInfo(settings);
+                
+                // Footer bilgilerini güncelle
+                updateFooter(settings);
             }
         }
     } catch (error) {
