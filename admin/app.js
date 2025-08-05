@@ -1131,26 +1131,6 @@ class AdminPanel {
                     
                     // Mevcut görselleri yenile
                     this.loadMedia();
-                    
-                    // Eğer anasayfa arka planı güncellendiyse, frontend'i yenile
-                    if (targetField === 'homepage_hero_bg') {
-                        console.log('🎨 Anasayfa arka planı güncellendi, frontend yenileniyor...');
-                        
-                        // Kullanıcıya bilgi ver
-                        this.showMessage('Anasayfa arka planı güncellendi! Frontend yenileniyor...', 'success');
-                        
-                        // Frontend'e bildirim gönder (opsiyonel)
-                        this.notifyFrontendUpdate('background-image');
-                        
-                        // 2 saniye sonra frontend'i yenile
-                        setTimeout(() => {
-                            // Ana sayfayı yeni sekmede aç
-                            window.open('/', '_blank');
-                            
-                            // Veya mevcut sekmede yenile (kullanıcı tercihine göre)
-                            // window.location.href = '/';
-                        }, 2000);
-                    }
                 } else {
                     console.error('Upload failed:', data);
                     let errorMessage = data.message || 'Yükleme başarısız.';
@@ -1651,15 +1631,6 @@ class AdminPanel {
             console.error('Navbar güncelleme hatası:', error);
             this.showMessage('Navbar ayarları güncellenirken hata oluştu!', 'error');
         });
-    }
-
-    notifyFrontendUpdate(type) {
-        if (typeof window.opener !== 'undefined' && window.opener !== null) {
-            window.opener.postMessage({ type: 'media-updated', data: { type: type } }, '*');
-            console.log(`Frontend notified for ${type} update.`);
-        } else {
-            console.warn('Frontend not available for notification.');
-        }
     }
 }
 

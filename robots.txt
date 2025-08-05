@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://www.bismilvinc.com/sitemap.xml
+Sitemap: https://bismilvinc.com/sitemap.xml
 
 # Admin panel ve API'leri gizle
 Disallow: /admin/

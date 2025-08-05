@@ -6,7 +6,7 @@
 
     <!-- Ana Sayfa -->
     <url>
-        <loc>https://www.bismilvinc.com/</loc>
+        <loc>https://bismilvinc.com/</loc>
         <lastmod>2024-08-04</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
@@ -14,28 +14,28 @@
 
     <!-- Hizmet Sayfaları -->
     <url>
-        <loc>https://www.bismilvinc.com/mobil-vinc-kiralama</loc>
+        <loc>https://bismilvinc.com/mobil-vinc-kiralama</loc>
         <lastmod>2024-08-04</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.9</priority>
     </url>
 
     <url>
-        <loc>https://www.bismilvinc.com/insaat-kurulum-hizmetleri</loc>
+        <loc>https://bismilvinc.com/insaat-kurulum-hizmetleri</loc>
         <lastmod>2024-08-04</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.9</priority>
     </url>
 
     <url>
-        <loc>https://www.bismilvinc.com/petrol-kuyusu-vinc-hizmetleri</loc>
+        <loc>https://bismilvinc.com/petrol-kuyusu-vinc-hizmetleri</loc>
         <lastmod>2024-08-04</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.9</priority>
     </url>
 
     <url>
-        <loc>https://www.bismilvinc.com/petrol-insaat-sahasi-kurulum</loc>
+        <loc>https://bismilvinc.com/petrol-insaat-sahasi-kurulum</loc>
         <lastmod>2024-08-04</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.9</priority>
@@ -43,7 +43,7 @@
 
     <!-- Hakkımızda Sayfası -->
     <url>
-        <loc>https://www.bismilvinc.com/hakkimizda</loc>
+        <loc>https://bismilvinc.com/hakkimizda</loc>
         <lastmod>2024-08-04</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
@@ -51,7 +51,7 @@
 
     <!-- İletişim Sayfası -->
     <url>
-        <loc>https://www.bismilvinc.com/iletisim</loc>
+        <loc>https://bismilvinc.com/iletisim</loc>
         <lastmod>2024-08-04</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
@@ -59,7 +59,7 @@
 
     <!-- Admin Panel (Gizli) -->
     <url>
-        <loc>https://www.bismilvinc.com/admin/dashboard</loc>
+        <loc>https://bismilvinc.com/admin/dashboard</loc>
         <lastmod>2024-08-04</lastmod>
         <changefreq>never</changefreq>
         <priority>0.1</priority>
@@ -67,14 +67,14 @@
 
     <!-- API Endpoints (Gizli) -->
     <url>
-        <loc>https://www.bismilvinc.com/api/settings</loc>
+        <loc>https://bismilvinc.com/api/settings</loc>
         <lastmod>2024-08-04</lastmod>
         <changefreq>never</changefreq>
         <priority>0.1</priority>
     </url>
 
     <url>
-        <loc>https://www.bismilvinc.com/api/services</loc>
+        <loc>https://bismilvinc.com/api/services</loc>
         <lastmod>2024-08-04</lastmod>
         <changefreq>never</changefreq>
         <priority>0.1</priority>

@@ -298,11 +298,6 @@ app.get('/api/settings', async (req, res) => {
     try {
         console.log('API settings isteği alındı');
         
-        // Cache-busting için headers ayarla
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.setHeader('Pragma', 'no-cache');
-        res.setHeader('Expires', '0');
-        
         // Supabase bağlantısını kontrol et
         if (!supabaseConnection.isConnected) {
             console.log('Supabase bağlantısı yok, fallback değerler döndürülüyor');
@@ -345,12 +340,9 @@ app.get('/api/settings', async (req, res) => {
         const settings = await settingsRepo.getPublicSettingsAsObject();
         
         console.log('Settings başarıyla getirildi');
-        console.log('Background image URL:', settings.homepage_hero_bg);
-        
         res.json({
             success: true,
-            data: settings,
-            timestamp: new Date().toISOString() // Cache-busting için timestamp ekle
+            data: settings
         });
     } catch (error) {
         console.error('Settings getirme hatası:', error);
@@ -364,8 +356,7 @@ app.get('/api/settings', async (req, res) => {
                 footer_phone: '0555 123 45 67',
                 footer_email: 'info@bismilvinc.com',
                 footer_address: 'Bismil, Diyarbakır'
-            },
-            timestamp: new Date().toISOString()
+            }
         });
     }
 });

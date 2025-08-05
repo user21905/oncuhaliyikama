@@ -353,59 +353,36 @@ async function loadDynamicImages() {
                     if (heroSection) {
                         console.log('Hero section bulundu, arka plan ayarlanıyor...');
                         
-                        // Cache-busting için timestamp ekle
-                        const timestamp = new Date().getTime();
-                        const cacheBustedUrl = settings.homepage_hero_bg.includes('?') 
-                            ? `${settings.homepage_hero_bg}&t=${timestamp}`
-                            : `${settings.homepage_hero_bg}?t=${timestamp}`;
-                        
-                        console.log('Cache-busted background URL:', cacheBustedUrl);
-                        
                         // Ekran boyutuna göre farklı ayarlar
                         const isMobile = window.innerWidth <= 768;
                         const isLargeScreen = window.innerWidth >= 1200;
                         
                         console.log('Screen size:', { width: window.innerWidth, isMobile, isLargeScreen });
                         
-                        const backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('${cacheBustedUrl}')`;
+                        const backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('${settings.homepage_hero_bg}')`;
                         console.log('Background image CSS:', backgroundImage);
                         
-                        // Görsel yüklenme durumunu kontrol et
-                        const img = new Image();
-                        img.onload = function() {
-                            console.log('✅ Background image başarıyla yüklendi');
-                            heroSection.style.backgroundImage = backgroundImage;
-                            heroSection.style.backgroundSize = 'cover';
-                            heroSection.style.backgroundPosition = 'center center';
-                            heroSection.style.backgroundRepeat = 'no-repeat';
-                            
-                            // Büyük ekranlarda fixed, küçük ekranlarda scroll
-                            if (isLargeScreen) {
-                                heroSection.style.backgroundAttachment = 'fixed';
-                            } else if (isMobile) {
-                                heroSection.style.backgroundAttachment = 'scroll';
-                            } else {
-                                heroSection.style.backgroundAttachment = 'fixed';
-                            }
-                            
-                            console.log('Hero section computed styles:', {
-                                backgroundImage: heroSection.style.backgroundImage,
-                                backgroundSize: heroSection.style.backgroundSize,
-                                backgroundPosition: heroSection.style.backgroundPosition
-                            });
-                            
-                            console.log('Hero background ayarlandı');
-                        };
+                        heroSection.style.backgroundImage = backgroundImage;
+                        heroSection.style.backgroundSize = 'cover';
+                        heroSection.style.backgroundPosition = 'center center';
+                        heroSection.style.backgroundRepeat = 'no-repeat';
                         
-                        img.onerror = function() {
-                            console.error('❌ Background image yüklenemedi:', cacheBustedUrl);
-                            // Hata durumunda varsayılan arka plan kullan
-                            heroSection.style.backgroundImage = 'linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url("/images/default-hero-bg.jpg")';
-                        };
+                        // Büyük ekranlarda fixed, küçük ekranlarda scroll
+                        if (isLargeScreen) {
+                            heroSection.style.backgroundAttachment = 'fixed';
+                        } else if (isMobile) {
+                            heroSection.style.backgroundAttachment = 'scroll';
+                        } else {
+                            heroSection.style.backgroundAttachment = 'fixed';
+                        }
                         
-                        // Görseli yüklemeye başla
-                        img.src = cacheBustedUrl;
+                        console.log('Hero section computed styles:', {
+                            backgroundImage: heroSection.style.backgroundImage,
+                            backgroundSize: heroSection.style.backgroundSize,
+                            backgroundPosition: heroSection.style.backgroundPosition
+                        });
                         
+                        console.log('Hero background ayarlandı');
                     } else {
                         console.log('Hero section bulunamadı (muhtemelen hizmet sayfasındayız)');
                     }
@@ -422,15 +399,9 @@ async function loadDynamicImages() {
                     console.log('Navbar logo URL bulundu:', settings.navbar_logo);
                     const navbarLogo = document.getElementById('navbar-logo');
                     if (navbarLogo) {
-                        // Cache-busting için timestamp ekle
-                        const timestamp = new Date().getTime();
-                        const cacheBustedLogoUrl = settings.navbar_logo.includes('?') 
-                            ? `${settings.navbar_logo}&t=${timestamp}`
-                            : `${settings.navbar_logo}?t=${timestamp}`;
-                        
-                        navbarLogo.src = cacheBustedLogoUrl;
+                        navbarLogo.src = settings.navbar_logo;
                         navbarLogo.classList.add('has-logo');
-                        console.log('Navbar logo ayarlandı (cache-busted):', cacheBustedLogoUrl);
+                        console.log('Navbar logo ayarlandı');
                     } else {
                         console.error('Navbar logo element bulunamadı!');
                     }
@@ -449,154 +420,52 @@ async function loadDynamicImages() {
                     'petrolkuyuhizmeti': settings.service_petrolkuyuhizmeti_img,
                     'petrolinsaatsahasi': settings.service_petrolinsaatsahasi_img
                 };
-                
-                // Her hizmet için görsel güncelle
-                Object.entries(serviceImages).forEach(([slug, imageUrl]) => {
+
+                // Hizmet kartlarındaki görselleri güncelle
+                Object.keys(serviceImages).forEach(slug => {
+                    const imageUrl = serviceImages[slug];
                     if (imageUrl) {
-                        console.log(`${slug} hizmet görseli bulundu:`, imageUrl);
-                        const serviceCard = document.querySelector(`[data-service="${slug}"]`);
+                        const serviceCard = document.querySelector(`[data-service-slug="${slug}"]`);
                         if (serviceCard) {
                             const serviceImg = serviceCard.querySelector('.service-img');
                             if (serviceImg) {
-                                // Cache-busting için timestamp ekle
-                                const timestamp = new Date().getTime();
-                                const cacheBustedImageUrl = imageUrl.includes('?') 
-                                    ? `${imageUrl}&t=${timestamp}`
-                                    : `${imageUrl}?t=${timestamp}`;
-                                
-                                const img = new Image();
-                                img.onload = function() {
-                                    console.log(`✅ ${slug} hizmet görseli başarıyla yüklendi`);
-                                    serviceImg.src = cacheBustedImageUrl;
-                                };
-                                img.onerror = function() {
-                                    console.error(`❌ ${slug} hizmet görseli yüklenemedi:`, cacheBustedImageUrl);
-                                };
-                                img.src = cacheBustedImageUrl;
+                                serviceImg.src = imageUrl;
+                                console.log(`${slug} hizmet görseli güncellendi:`, imageUrl);
                             }
                         }
                     }
                 });
-                
+
                 // İletişim bilgilerini güncelle
                 updateContactInfo(settings);
                 
                 // Footer'ı güncelle
                 updateFooter(settings);
                 
+                // Hizmet sayfalarında görsel yükleme
+                const currentPath = window.location.pathname;
+                console.log('Current path:', currentPath);
+                
+                if (currentPath.includes('mobilvinchizmeti') && serviceImages.mobilvinchizmeti) {
+                    updateServiceImage(serviceImages.mobilvinchizmeti);
+                } else if (currentPath.includes('insaatkurulumu') && serviceImages.insaatkurulumu) {
+                    updateServiceImage(serviceImages.insaatkurulumu);
+                } else if (currentPath.includes('petrolkuyuhizmeti') && serviceImages.petrolkuyuhizmeti) {
+                    updateServiceImage(serviceImages.petrolkuyuhizmeti);
+                } else if (currentPath.includes('petrolinsaatsahasi') && serviceImages.petrolinsaatsahasi) {
+                    updateServiceImage(serviceImages.petrolinsaatsahasi);
+                }
             } else {
                 console.error('API response başarısız:', data);
             }
         } else {
-            console.error('API request başarısız:', response.status);
+            console.error('API response hatası:', response.status);
         }
     } catch (error) {
         console.error('loadDynamicImages hatası:', error);
     }
-}
-
-// Background image'i yenileme fonksiyonu
-async function refreshBackgroundImage() {
-    try {
-        console.log('🔄 Background image yenileniyor...');
-        
-        const response = await fetch('/api/settings');
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.data && data.data.homepage_hero_bg) {
-                const heroSection = document.getElementById('hero-section');
-                if (heroSection) {
-                    // Cache-busting için timestamp ekle
-                    const timestamp = new Date().getTime();
-                    const cacheBustedUrl = data.data.homepage_hero_bg.includes('?') 
-                        ? `${data.data.homepage_hero_bg}&t=${timestamp}`
-                        : `${data.data.homepage_hero_bg}?t=${timestamp}`;
-                    
-                    const backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('${cacheBustedUrl}')`;
-                    
-                    // Görsel yüklenme durumunu kontrol et
-                    const img = new Image();
-                    img.onload = function() {
-                        console.log('✅ Background image yenilendi');
-                        heroSection.style.backgroundImage = backgroundImage;
-                    };
-                    img.onerror = function() {
-                        console.error('❌ Background image yenilenemedi:', cacheBustedUrl);
-                    };
-                    img.src = cacheBustedUrl;
-                }
-            }
-        }
-    } catch (error) {
-        console.error('Background image yenileme hatası:', error);
-    }
-}
-
-// Periyodik olarak background image'i kontrol et (opsiyonel)
-function startBackgroundImageCheck() {
-    // Her 5 dakikada bir kontrol et
-    setInterval(async () => {
-        if (document.getElementById('hero-section')) {
-            await refreshBackgroundImage();
-        }
-    }, 5 * 60 * 1000); // 5 dakika
-}
-
-// Development modunda refresh button'ı göster
-function showRefreshButton() {
-    const refreshBtn = document.getElementById('refresh-bg-btn');
-    if (refreshBtn) {
-        // Development modunda göster (localhost veya development URL'lerinde)
-        if (window.location.hostname === 'localhost' || 
-            window.location.hostname === '127.0.0.1' || 
-            window.location.hostname.includes('vercel.app')) {
-            refreshBtn.style.display = 'block';
-            console.log('🛠️ Development modu: Refresh button aktif');
-        }
-    }
-}
-
-// Keyboard shortcuts for testing
-function setupKeyboardShortcuts() {
-    document.addEventListener('keydown', function(e) {
-        // Ctrl+R veya Cmd+R ile background image'i yenile
-        if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
-            e.preventDefault();
-            console.log('⌨️ Keyboard shortcut: Background image yenileniyor...');
-            refreshBackgroundImage();
-        }
-        
-        // F5 ile sayfa yenileme yerine background image'i yenile
-        if (e.key === 'F5') {
-            e.preventDefault();
-            console.log('⌨️ F5: Background image yenileniyor...');
-            refreshBackgroundImage();
-        }
-    });
-}
-
-// Admin panel'den gelen mesajları dinle
-function setupMessageListener() {
-    window.addEventListener('message', function(event) {
-        // Güvenlik için origin kontrolü (opsiyonel)
-        // if (event.origin !== window.location.origin) return;
-        
-        if (event.data && event.data.type === 'media-updated') {
-            console.log('📢 Admin panel\'den güncelleme bildirimi alındı:', event.data);
-            
-            if (event.data.data && event.data.data.type === 'background-image') {
-                console.log('🎨 Background image güncelleme bildirimi alındı');
-                
-                // Kullanıcıya bildirim göster
-                showNotification('Arka plan görseli güncellendi!', 'success');
-                
-                // Background image'i yenile
-                setTimeout(() => {
-                    refreshBackgroundImage();
-                }, 1000);
-            }
-        }
-    });
+    
+    console.log('=== loadDynamicImages tamamlandı ===');
 }
 
 // İletişim bilgilerini güncelle (sadece anasayfa contact section için)
@@ -723,32 +592,9 @@ function updateServiceImage(imageUrl) {
     }
 }
 
-// Sayfa yüklendiğinde çalışacak kodlar
+// Sayfa yüklendiğinde dinamik görselleri yükle
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('=== SAYFA YÜKLENDİ ===');
-    
-    // Dinamik görselleri yükle
     loadDynamicImages();
-    
-    // Navbar scroll efekti
-    const navbar = document.querySelector('.navbar');
-    if (navbar) {
-        window.addEventListener('scroll', debouncedScrollHandler);
-    }
-    
-    // Background image kontrolünü başlat
-    startBackgroundImageCheck();
-    
-    // Development modunda refresh button'ı göster
-    showRefreshButton();
-    
-    // Keyboard shortcuts'ları ayarla
-    setupKeyboardShortcuts();
-    
-    // Admin panel mesajlarını dinle
-    setupMessageListener();
-    
-    console.log('=== SAYFA YÜKLEME TAMAMLANDI ===');
 }); 
 
 // Footer'ı güncelle
