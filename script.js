@@ -382,10 +382,11 @@ async function loadDynamicImages() {
                         const img = new Image();
                         img.onload = function() {
                             console.log('✅ Background image yüklendi, CSS uygulanıyor...');
-                            heroSection.style.backgroundImage = backgroundImage;
-                            heroSection.style.backgroundSize = 'cover';
-                            heroSection.style.backgroundPosition = 'center center';
-                            heroSection.style.backgroundRepeat = 'no-repeat';
+                            // !important ile CSS ayarla
+                            heroSection.style.setProperty('background-image', backgroundImage, 'important');
+                            heroSection.style.setProperty('background-size', 'cover', 'important');
+                            heroSection.style.setProperty('background-position', 'center center', 'important');
+                            heroSection.style.setProperty('background-repeat', 'no-repeat', 'important');
 
                             // Büyük ekranlarda fixed, küçük ekranlarda scroll
                             if (isLargeScreen) {
