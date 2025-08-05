@@ -333,13 +333,15 @@ async function loadDynamicImages() {
         console.log('=== loadDynamicImages başladı ===');
         console.log('Mevcut URL:', window.location.href);
         
-        // Cache-busting ile API çağrısı
+        // Daha güçlü cache-busting ile API çağrısı
         const timestamp = new Date().getTime();
-        const response = await fetch(`/api/settings?t=${timestamp}`, {
+        const random = Math.random();
+        const response = await fetch(`/api/settings?t=${timestamp}&r=${random}`, {
             method: 'GET',
             headers: {
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
             }
         });
         console.log('API response status:', response.status);
@@ -363,36 +365,52 @@ async function loadDynamicImages() {
                     if (heroSection) {
                         console.log('Hero section bulundu, arka plan ayarlanıyor...');
                         
+                        // Cache-busting ile image URL'si
+                        const imageUrl = `${settings.homepage_hero_bg}?t=${timestamp}&r=${random}`;
+                        console.log('Cache-busting image URL:', imageUrl);
+                        
                         // Ekran boyutuna göre farklı ayarlar
                         const isMobile = window.innerWidth <= 768;
                         const isLargeScreen = window.innerWidth >= 1200;
                         
                         console.log('Screen size:', { width: window.innerWidth, isMobile, isLargeScreen });
                         
-                        const backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('${settings.homepage_hero_bg}')`;
+                        const backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('${imageUrl}')`;
                         console.log('Background image CSS:', backgroundImage);
                         
-                        heroSection.style.backgroundImage = backgroundImage;
-                        heroSection.style.backgroundSize = 'cover';
-                        heroSection.style.backgroundPosition = 'center center';
-                        heroSection.style.backgroundRepeat = 'no-repeat';
+                        // Önce image'in yüklenip yüklenmediğini kontrol et
+                        const img = new Image();
+                        img.onload = function() {
+                            console.log('✅ Background image yüklendi, CSS uygulanıyor...');
+                            heroSection.style.backgroundImage = backgroundImage;
+                            heroSection.style.backgroundSize = 'cover';
+                            heroSection.style.backgroundPosition = 'center center';
+                            heroSection.style.backgroundRepeat = 'no-repeat';
+                            
+                            // Büyük ekranlarda fixed, küçük ekranlarda scroll
+                            if (isLargeScreen) {
+                                heroSection.style.backgroundAttachment = 'fixed';
+                            } else if (isMobile) {
+                                heroSection.style.backgroundAttachment = 'scroll';
+                            } else {
+                                heroSection.style.backgroundAttachment = 'fixed';
+                            }
+                            
+                            console.log('Hero section computed styles:', {
+                                backgroundImage: heroSection.style.backgroundImage,
+                                backgroundSize: heroSection.style.backgroundSize,
+                                backgroundPosition: heroSection.style.backgroundPosition
+                            });
+                            
+                            console.log('✅ Hero background başarıyla ayarlandı');
+                        };
                         
-                        // Büyük ekranlarda fixed, küçük ekranlarda scroll
-                        if (isLargeScreen) {
-                            heroSection.style.backgroundAttachment = 'fixed';
-                        } else if (isMobile) {
-                            heroSection.style.backgroundAttachment = 'scroll';
-                        } else {
-                            heroSection.style.backgroundAttachment = 'fixed';
-                        }
+                        img.onerror = function() {
+                            console.error('❌ Background image yüklenemedi:', imageUrl);
+                        };
                         
-                        console.log('Hero section computed styles:', {
-                            backgroundImage: heroSection.style.backgroundImage,
-                            backgroundSize: heroSection.style.backgroundSize,
-                            backgroundPosition: heroSection.style.backgroundPosition
-                        });
+                        img.src = imageUrl;
                         
-                        console.log('✅ Hero background başarıyla ayarlandı');
                     } else {
                         console.log('Hero section bulunamadı (muhtemelen hizmet sayfasındayız)');
                     }
