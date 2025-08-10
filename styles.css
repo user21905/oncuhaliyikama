@@ -248,6 +248,7 @@ p {
     padding: 120px 0 80px;
     text-align: center;
     min-height: 100vh;
+    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1035,6 +1036,7 @@ p {
     
     .home-section {
         min-height: 100vh;
+        height: 100vh;
         padding: 140px 0 100px;
     }
     
@@ -1070,6 +1072,7 @@ p {
     
     .home-section {
         min-height: 100vh;
+        height: 100vh;
         padding: 160px 0 120px;
     }
     
@@ -1105,6 +1108,7 @@ p {
     
     .home-section {
         min-height: 100vh;
+        height: 100vh;
         padding: 180px 0 140px;
     }
     
@@ -1148,6 +1152,7 @@ p {
     
     .home-section {
         min-height: 100vh;
+        height: 100vh;
         padding: 200px 0 160px;
     }
     
@@ -1191,6 +1196,7 @@ p {
     
     .home-section {
         min-height: 100vh;
+        height: 100vh;
         padding: 240px 0 200px;
     }
     
