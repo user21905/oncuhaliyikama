@@ -1027,11 +1027,15 @@ p {
     }
     
     .nav-logo h2 {
-        font-size: 1.4rem;
+        font-size: 1.5rem;
     }
     
     .nav-menu {
         gap: 2rem;
+    }
+    
+    .nav-link {
+        font-size: 1rem;
     }
     
     .home-section {
@@ -1067,7 +1071,19 @@ p {
 
 @media (min-width: 1400px) {
     .nav-container {
-        padding: 0 60px;
+        padding: 0 50px;
+    }
+    
+    .nav-logo h2 {
+        font-size: 1.5rem;
+    }
+    
+    .nav-menu {
+        gap: 2.5rem;
+    }
+    
+    .nav-link {
+        font-size: 1rem;
     }
     
     .home-section {
@@ -1103,7 +1119,19 @@ p {
 
 @media (min-width: 1600px) {
     .nav-container {
-        padding: 0 80px;
+        padding: 0 60px;
+    }
+    
+    .nav-logo h2 {
+        font-size: 1.5rem;
+    }
+    
+    .nav-menu {
+        gap: 3rem;
+    }
+    
+    .nav-link {
+        font-size: 1rem;
     }
     
     .home-section {
@@ -1139,15 +1167,19 @@ p {
 
 @media (min-width: 1920px) {
     .nav-container {
-        padding: 0 100px;
+        padding: 0 80px;
     }
     
     .nav-logo h2 {
-        font-size: 1.6rem;
+        font-size: 1.5rem;
+    }
+    
+    .nav-menu {
+        gap: 3.5rem;
     }
     
     .nav-link {
-        font-size: 1.05rem;
+        font-size: 1rem;
     }
     
     .home-section {
@@ -1183,15 +1215,19 @@ p {
 
 @media (min-width: 2560px) {
     .nav-container {
-        padding: 0 150px;
+        padding: 0 120px;
     }
     
     .nav-logo h2 {
-        font-size: 1.8rem;
+        font-size: 1.5rem;
+    }
+    
+    .nav-menu {
+        gap: 4rem;
     }
     
     .nav-link {
-        font-size: 1.1rem;
+        font-size: 1rem;
     }
     
     .home-section {
