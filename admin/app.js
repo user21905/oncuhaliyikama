@@ -8,6 +8,37 @@ class AdminPanel {
         this.init();
     }
 
+    setupContactActions() {
+        const container = document.getElementById('contactsList');
+        const recent = document.getElementById('recentContacts');
+        const handler = async (e) => {
+            const btn = e.target.closest('[data-action="delete-contact"]');
+            if (!btn) return;
+            const id = btn.getAttribute('data-id');
+            if (!id) return;
+            if (!confirm('Bu mesajı silmek istiyor musunuz?')) return;
+            try {
+                const res = await fetch(`/api/admin/contacts/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${this.token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    this.showMessage('Mesaj silindi', 'success');
+                    this.loadContacts();
+                    this.loadRecentContacts();
+                } else {
+                    this.showMessage('Mesaj silinemedi', 'error');
+                }
+            } catch (error) {
+                console.error('Delete contact error:', error);
+                this.showMessage('Mesaj silinemedi', 'error');
+            }
+        };
+        if (container) container.addEventListener('click', handler, { once: true });
+        if (recent) recent.addEventListener('click', handler, { once: true });
+    }
+
     init() {
         console.log('=== ADMIN PANEL INIT BAŞLADI ===');
         this.setupEventListeners();
@@ -152,6 +183,10 @@ class AdminPanel {
                     case 'delete-service':
                         const deleteServiceId = e.target.closest('[data-action]').getAttribute('data-service-id');
                         this.deleteService(deleteServiceId);
+                        break;
+                    case 'delete-contact':
+                        const contactId = e.target.closest('[data-action]').getAttribute('data-id');
+                        this.deleteContact(contactId);
                         break;
                 }
             }
@@ -517,18 +552,35 @@ class AdminPanel {
                     return;
                 }
 
-                const html = contacts.map(contact => `
+                const dedup = [];
+                const seenKeys = new Set();
+                contacts.forEach(c => {
+                    const key = c.id || `${c.name}|${c.phone}|${c.created_at}`;
+                    if (!seenKeys.has(key)) { seenKeys.add(key); dedup.push(c); }
+                });
+
+                const html = dedup.map(contact => {
+                    const created = contact.createdAt || contact.created_at || contact.created || contact.timestamp;
+                    const createdText = created ? new Date(created).toLocaleDateString('tr-TR') : '';
+                    const msg = (contact.message || contact.msg || '').toString();
+                    const phone = contact.phone || contact.tel || '';
+                    return `
                     <div class="contact-item">
                         <div class="contact-header">
                             <span class="contact-name">${contact.name}</span>
-                            <span class="contact-date">${new Date(contact.createdAt).toLocaleDateString('tr-TR')}</span>
+                            <span class="contact-date">${createdText}</span>
                         </div>
                         <span class="contact-service">${contact.service}</span>
-                        <p class="contact-message">${contact.message.substring(0, 100)}${contact.message.length > 100 ? '...' : ''}</p>
+                        <p class="contact-message">${msg.substring(0, 100)}${msg.length > 100 ? '...' : ''}</p>
+                        ${phone ? `<div class="contact-phone">📞 ${phone}</div>` : ''}
+                        <div class="contact-actions">
+                            <button class="btn btn-danger btn-xs" data-action="delete-contact" data-id="${contact.id}">Sil</button>
+                        </div>
                     </div>
-                `).join('');
+                `;}).join('');
 
                 container.innerHTML = html;
+                this.setupContactActions();
             }
         } catch (error) {
             console.error('Recent contacts loading error:', error);
@@ -618,10 +670,10 @@ class AdminPanel {
         const mediaItems = [
             { key: 'navbar_logo', title: 'Navbar Logo', description: 'Üst menüde görünen logo' },
             { key: 'homepage_hero_bg', title: 'Anasayfa Arkaplanı', description: 'Ana sayfa hero bölümü arka planı' },
-            { key: 'service_mobilvinchizmeti_img', title: 'Mobil Vinç Hizmeti', description: 'Mobil vinç hizmet sayfası görseli' },
-            { key: 'service_insaatkurulumu_img', title: 'İnşaat Kurulum Hizmeti', description: 'İnşaat kurulum hizmet sayfası görseli' },
-            { key: 'service_petrolkuyuhizmeti_img', title: 'Petrol Kuyusu Hizmeti', description: 'Petrol kuyusu hizmet sayfası görseli' },
-            { key: 'service_petrolinsaatsahasi_img', title: 'Petrol ve İnşaat Sahası', description: 'Petrol ve inşaat sahası hizmet sayfası görseli' }
+            { key: 'service_haliyikama_img', title: 'Halı Yıkama Hizmeti', description: 'Halı yıkama hizmet sayfası görseli' },
+            { key: 'service_koltukyikama_img', title: 'Koltuk Yıkama Hizmeti', description: 'Koltuk yıkama hizmet sayfası görseli' },
+            { key: 'service_perdeyikama_img', title: 'Perde Yıkama Hizmeti', description: 'Perde yıkama hizmet sayfası görseli' },
+            { key: 'service_yorganbattaniyeyikama_img', title: 'Yorgan ve Battaniye Yıkama', description: 'Yorgan ve battaniye yıkama hizmet sayfası görseli' }
         ];
 
         let html = '';
@@ -728,18 +780,35 @@ class AdminPanel {
                     return;
                 }
 
-                const html = contacts.map(contact => `
+                const dedup = [];
+                const seenKeys = new Set();
+                contacts.forEach(c => {
+                    const key = c.id || `${c.name}|${c.phone}|${c.created_at}`;
+                    if (!seenKeys.has(key)) { seenKeys.add(key); dedup.push(c); }
+                });
+
+                const html = dedup.map(contact => {
+                    const created = contact.createdAt || contact.created_at || contact.created || contact.timestamp;
+                    const createdText = created ? new Date(created).toLocaleString('tr-TR') : '';
+                    const msg = contact.message || contact.msg || '';
+                    const phone = contact.phone || contact.tel || '';
+                    return `
                     <div class="contact-item">
                         <div class="contact-header">
                             <span class="contact-name">${contact.name}</span>
-                            <span class="contact-date">${new Date(contact.createdAt).toLocaleDateString('tr-TR')}</span>
+                            <span class="contact-date">${createdText}</span>
                         </div>
                         <span class="contact-service">${contact.service}</span>
-                        <p class="contact-message">${contact.message}</p>
+                        <p class="contact-message">${msg}</p>
+                        ${phone ? `<div class="contact-phone">📞 ${phone}</div>` : ''}
+                        <div class="contact-actions">
+                            <button class="btn btn-danger btn-xs" data-action="delete-contact" data-id="${contact.id}">Sil</button>
+                        </div>
                     </div>
-                `).join('');
+                `;}).join('');
 
                 container.innerHTML = html;
+                this.setupContactActions();
             }
         } catch (error) {
             console.error('Contacts loading error:', error);
@@ -1243,9 +1312,9 @@ class AdminPanel {
                 title: 'Ana Sayfa İçerikleri',
                 icon: 'fas fa-home',
                 fields: [
-                    { name: 'hero_title', label: 'Ana Başlık', type: 'text', value: 'Profesyonel Vinç Kurulum Hizmeti', placeholder: 'Ana sayfa başlığını girin' },
-                    { name: 'hero_subtitle', label: 'Alt Başlık', type: 'textarea', value: 'Diyarbakır\'da güvenilir ve kaliteli mobil vinç, platform lift ve inşaat kurulum hizmetleri sunuyoruz.', placeholder: 'Ana sayfa alt başlığını girin' },
-                    { name: 'services_intro', label: 'Hizmetler Giriş Metni', type: 'textarea', value: 'Bismil Vinç olarak, Diyarbakır ve çevre illerde profesyonel vinç ve kurulum hizmetleri sunuyoruz. Modern ekipmanlarımız ve uzman ekibimizle, her türlü projenizi güvenle tamamlıyoruz.', placeholder: 'Hizmetler bölümü giriş metnini girin' }
+                    { name: 'hero_title', label: 'Ana Başlık', type: 'text', value: 'Profesyonel Halı Yıkama Hizmeti', placeholder: 'Ana sayfa başlığını girin' },
+                    { name: 'hero_subtitle', label: 'Alt Başlık', type: 'textarea', value: 'Diyarbakır Bismil\'de güvenilir ve kaliteli halı yıkama, koltuk yıkama, perde yıkama ve yorgan battaniye yıkama hizmetleri sunuyoruz.', placeholder: 'Ana sayfa alt başlığını girin' },
+                    { name: 'services_intro', label: 'Hizmetler Giriş Metni', type: 'textarea', value: 'Öncü Halı Yıkama olarak, Diyarbakır Bismil ve çevre bölgelerde profesyonel temizlik hizmetleri sunuyoruz. Modern ekipmanlarımız ve uzman ekibimizle, evinizi güvenle temizliyoruz.', placeholder: 'Hizmetler bölümü giriş metnini girin' }
                 ]
             },
             about: {
@@ -1253,11 +1322,11 @@ class AdminPanel {
                 icon: 'fas fa-info-circle',
                 fields: [
                     { name: 'about_title', label: 'Başlık', type: 'text', value: 'Hakkımızda', placeholder: 'Hakkımızda başlığını girin' },
-                    { name: 'about_text1', label: 'Birinci Paragraf', type: 'textarea', value: 'Bismil Vinç olarak, Diyarbakır ve çevre illerde 16 yılı aşkın deneyimimizle mobil vinç ve kaldırma hizmetleri sunuyoruz. Müşterilerimizin güvenliği ve memnuniyeti bizim için en önemli önceliktir.', placeholder: 'İlk paragraf metnini girin' },
-                    { name: 'about_text2', label: 'İkinci Paragraf', type: 'textarea', value: 'Modern ekipmanlarımız ve uzman ekibimizle, her türlü kaldırma işlemini en yüksek güvenlik standartlarında gerçekleştiriyoruz. İnşaat, endüstri ve özel projelerinizde güvenilir çözüm ortağınız olmaktan gurur duyuyoruz.', placeholder: 'İkinci paragraf metnini girin' },
+                    { name: 'about_text1', label: 'Birinci Paragraf', type: 'textarea', value: 'Öncü Halı Yıkama olarak, Diyarbakır Bismil ve çevre bölgelerde 16 yılı aşkın deneyimimizle halı yıkama ve temizlik hizmetleri sunuyoruz. Müşterilerimizin hijyeni ve memnuniyeti bizim için en önemli önceliktir.', placeholder: 'İlk paragraf metnini girin' },
+                    { name: 'about_text2', label: 'İkinci Paragraf', type: 'textarea', value: 'Modern temizlik ekipmanlarımız ve uzman ekibimizle, her türlü temizlik işlemini en yüksek hijyen standartlarında gerçekleştiriyoruz. Ev temizliği, halı yıkama ve tekstil bakımında güvenilir çözüm ortağınız olmaktan gurur duyuyoruz.', placeholder: 'İkinci paragraf metnini girin' },
                     { name: 'experience_years', label: 'Deneyim Yılı', type: 'number', value: '16', placeholder: 'Deneyim yılını girin' },
-                    { name: 'completed_projects', label: 'Tamamlanan Proje', type: 'number', value: '500', placeholder: 'Tamamlanan proje sayısını girin' },
-                    { name: 'safety_record', label: 'Güvenlik Kaydı', type: 'text', value: '%100', placeholder: 'Güvenlik kaydını girin' }
+                    { name: 'completed_projects', label: 'Yıkanan Halı', type: 'number', value: '5000', placeholder: 'Yıkanan halı sayısını girin' },
+                    { name: 'safety_record', label: 'Müşteri Memnuniyeti', type: 'text', value: '%100', placeholder: 'Müşteri memnuniyetini girin' }
                 ]
             },
             contact: {

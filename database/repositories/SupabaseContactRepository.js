@@ -3,15 +3,29 @@ const supabaseConnection = require('../supabase-connection');
 class SupabaseContactRepository {
     constructor() {
         this.tableName = 'contacts';
+        if (!SupabaseContactRepository.memoryStore) {
+            SupabaseContactRepository.memoryStore = [];
+        }
     }
 
     async connect() {
         return await supabaseConnection.connect();
     }
 
+    async getClient() {
+        try {
+            if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+                return supabaseConnection.getAdminClient();
+            }
+        } catch (e) {
+            // admin client yoksa normal bağlan
+        }
+        return await this.connect();
+    }
+
     async create(contactData) {
         try {
-            const supabase = await this.connect();
+            const supabase = await this.getClient();
             const { data, error } = await supabase
                 .from(this.tableName)
                 .insert([contactData])
@@ -21,29 +35,47 @@ class SupabaseContactRepository {
             return data[0];
         } catch (error) {
             console.error('Contact oluşturma hatası:', error);
-            throw error;
+            // Memory fallback
+            const record = {
+                id: 'mem_' + Date.now(),
+                created_at: new Date().toISOString(),
+                is_read: false,
+                status: 'new',
+                source: 'website',
+                priority: 'normal',
+                ...contactData
+            };
+            SupabaseContactRepository.memoryStore.unshift(record);
+            return record;
         }
     }
 
     async findAll() {
         try {
-            const supabase = await this.connect();
+            const supabase = await this.getClient();
             const { data, error } = await supabase
                 .from(this.tableName)
                 .select('*')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            return data || [];
+            const dbData = Array.isArray(data) ? data : [];
+            const memData = Array.isArray(SupabaseContactRepository.memoryStore) ? SupabaseContactRepository.memoryStore : [];
+            // Supabase boş dönerse memory fallback'i de dön
+            if (dbData.length === 0 && memData.length > 0) {
+                return memData.slice();
+            }
+            return dbData;
         } catch (error) {
             console.error('Contact listesi alma hatası:', error);
-            throw error;
+            // Memory fallback
+            return SupabaseContactRepository.memoryStore.slice();
         }
     }
 
     async findById(id) {
         try {
-            const supabase = await this.connect();
+            const supabase = await this.getClient();
             const { data, error } = await supabase
                 .from(this.tableName)
                 .select('*')
@@ -60,7 +92,7 @@ class SupabaseContactRepository {
 
     async update(id, updateData) {
         try {
-            const supabase = await this.connect();
+            const supabase = await this.getClient();
             const { data, error } = await supabase
                 .from(this.tableName)
                 .update(updateData)
@@ -77,7 +109,7 @@ class SupabaseContactRepository {
 
     async delete(id) {
         try {
-            const supabase = await this.connect();
+            const supabase = await this.getClient();
             const { error } = await supabase
                 .from(this.tableName)
                 .delete()
@@ -93,7 +125,7 @@ class SupabaseContactRepository {
 
     async getUnreadCount() {
         try {
-            const supabase = await this.connect();
+            const supabase = await this.getClient();
             const { count, error } = await supabase
                 .from(this.tableName)
                 .select('*', { count: 'exact', head: true })

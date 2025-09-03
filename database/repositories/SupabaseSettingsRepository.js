@@ -119,8 +119,17 @@ class SupabaseSettingsRepository {
             
             // Etkilenen satır sayısını kontrol et
             if (!data || data.length === 0) {
-                console.error(`❌ Settings güncelleme başarısız: key="${key}" bulunamadı`);
-                throw new Error(`Settings key "${key}" bulunamadı`);
+                console.warn(`⚠️ Key bulunamadı, oluşturuluyor: ${key}`);
+                const { data: insertData, error: insertError } = await client
+                    .from(this.tableName)
+                    .insert([{ key, value }])
+                    .select();
+                if (insertError) {
+                    console.error('❌ Settings insert error:', insertError);
+                    throw insertError;
+                }
+                console.log(`✅ Settings oluşturuldu: key=${key}`);
+                return insertData[0];
             }
             
             console.log(`✅ Settings güncelleme başarılı: key=${key}, etkilenen satır=${data.length}`);
@@ -298,30 +307,30 @@ class SupabaseSettingsRepository {
                 navbar_contact_link: 'İletişim',
                 
                 // Footer ayarları
-                footer_company_name: 'Bismil Vinç',
-                footer_description: 'Diyarbakır\'da profesyonel mobil vinç ve kurulum hizmetleri',
+                footer_company_name: 'Öncü Halı Yıkama',
+                footer_description: 'Diyarbakır Bismil\'de profesyonel halı, koltuk, perde ve yorgan-battaniye yıkama',
                 footer_phone: '0555 123 45 67',
                 footer_phone2: '0555 123 45 67',
                 footer_whatsapp: '0555 123 45 67',
-                footer_email: 'info@bismilvinc.com',
+                footer_email: 'info@oncuhaliyikama.com',
                 footer_address: 'Bismil, Diyarbakır',
                 footer_working_hours: '7/24 Hizmet',
                 footer_home_link: 'Ana Sayfa',
                 footer_services_link: 'Hizmetler',
                 footer_about_link: 'Hakkımızda',
                 footer_contact_link: 'İletişim',
-                footer_service1: 'Mobil Vinç Kiralama',
-                footer_service2: 'İnşaat Kurulum Hizmetleri',
-                footer_service3: 'Petrol Kuyusu Hizmetleri',
-                footer_service4: 'Petrol ve İnşaat Sahası',
-                footer_service5: 'Platform Lift Kiralama',
-                footer_copyright: '© 2024 Bismil Vinç. Tüm hakları saklıdır.',
+                footer_service1: 'Halı Yıkama',
+                footer_service2: 'Koltuk Yıkama',
+                footer_service3: 'Perde Yıkama',
+                footer_service4: 'Yorgan ve Battaniye Yıkama',
+                footer_service5: '',
+                footer_copyright: '© 2025 Öncü Halı Yıkama. Tüm hakları saklıdır.',
                 
-                // Hizmet resimleri
-                service_mobilvinchizmeti_img: '',
-                service_insaatkurulumu_img: '',
-                service_petrolkuyuhizmeti_img: '',
-                service_petrolinsaatsahasi_img: '',
+                // Hizmet resimleri (yeni)
+                service_haliyikama_img: '',
+                service_koltukyikama_img: '',
+                service_perdeyikama_img: '',
+                service_yorganbattaniyeyikama_img: '',
                 
                 // Anasayfa hero arka planı
                 homepage_hero_bg: '',
@@ -329,7 +338,7 @@ class SupabaseSettingsRepository {
                 // İletişim bilgileri
                 contact_phone: '0555 123 45 67',
                 contact_whatsapp: '0555 123 45 67',
-                contact_email: 'info@bismilvinc.com',
+                contact_email: 'info@oncuhaliyikama.com',
                 contact_address: 'Bismil, Diyarbakır',
                 
                 // Harita koordinatları

@@ -108,14 +108,31 @@ if (contactForm) {
             }
         }
         
-        // Simulate form submission
+        // Gerçek API çağrısı
         showNotification('Mesajınız gönderiliyor...', 'info');
-        
-        // Simulate API call
-        setTimeout(() => {
+
+        // API'ye gönderirken telefonu boşluklardan arındır
+        const phoneSanitized = phone ? phone.replace(/\s/g, '') : '';
+
+        fetch('/api/contact', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, phone: phoneSanitized, email, service, message })
+        })
+        .then(async (res) => {
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || data.success === false) {
+                throw new Error(data.message || 'Mesaj gönderilemedi');
+            }
             showNotification('Mesajınız başarıyla gönderildi! En kısa sürede size dönüş yapacağız.', 'success');
             contactForm.reset();
-        }, 2000);
+        })
+        .catch((err) => {
+            console.error('İletişim formu hata:', err);
+            showNotification(`Mesaj gönderilemedi: ${err.message}`, 'error');
+        });
     });
 }
 
@@ -445,10 +462,10 @@ async function loadDynamicImages() {
 
                 // Hizmet görselleri
                 const serviceImages = {
-                    'mobilvinchizmeti': settings.service_mobilvinchizmeti_img,
-                    'insaatkurulumu': settings.service_insaatkurulumu_img,
-                    'petrolkuyuhizmeti': settings.service_petrolkuyuhizmeti_img,
-                    'petrolinsaatsahasi': settings.service_petrolinsaatsahasi_img
+                    'haliyikama': settings.service_haliyikama_img,
+                    'koltukyikama': settings.service_koltukyikama_img,
+                    'perdeyikama': settings.service_perdeyikama_img,
+                    'yorganbattaniyeyikama': settings.service_yorganbattaniyeyikama_img
                 };
 
                 // Hizmet kartlarındaki görselleri güncelle

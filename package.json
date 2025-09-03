@@ -1,25 +1,37 @@
 {
-  "name": "bismil-vinc",
+  "name": "oncu-hali-yikama",
   "version": "1.0.0",
-  "description": "Bismil Vinç - Mobil Vinç ve Kurulum Hizmetleri",
+  "description": "Öncü Halı Yıkama - Diyarbakır Bismil'de profesyonel halı yıkama, koltuk yıkama, perde yıkama ve yorgan battaniye yıkama hizmetleri. Hijyenik, güvenilir ve kaliteli temizlik çözümleri.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
     "build": "echo 'Build completed'",
     "vercel-build": "echo 'Vercel build completed'",
-    "test": "echo 'No tests specified'",
-    "setup": "node setup-env.js"
+    "test": "echo 'No tests specified'"
   },
   "keywords": [
-    "vinç",
-    "kiralama",
-    "diyarbakır",
+    "öncü halı yıkama",
+    "bismil halı yıkama",
+    "diyarbakır halı yıkama",
+    "koltuk yıkama",
+    "perde yıkama",
+    "yorgan yıkama",
+    "battaniye yıkama",
+    "halı temizleme",
     "bismil",
-    "mobil-vinç",
-    "kurulum-hizmetleri"
+    "diyarbakır",
+    "güneydoğu anadolu",
+    "halı yıkama",
+    "koltuk temizleme",
+    "perde temizleme",
+    "yorgan temizleme",
+    "battaniye temizleme",
+    "profesyonel temizlik",
+    "hijyenik yıkama",
+    "ev temizliği"
   ],
-  "author": "Bismil Vinç",
+  "author": "Öncü Halı Yıkama",
   "license": "MIT",
   "dependencies": {
     "@supabase/supabase-js": "^2.53.0",
@@ -34,6 +46,7 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "node-fetch": "^2.7.0",
+    "node.js": "^0.0.1-security",
     "redis": "^4.6.10",
     "socket.io": "^4.7.4",
     "winston": "^3.11.0"

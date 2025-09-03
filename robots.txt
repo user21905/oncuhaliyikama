@@ -1,18 +1,18 @@
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://bismilvinc.com/sitemap.xml
-
-# Admin panel ve API'leri gizle
-Disallow: /admin/
-Disallow: /api/
+# Ana sayfa ve hizmet sayfalarına tam erişim
+Allow: /
+Allow: /hali-yikama
+Allow: /koltuk-yikama
+Allow: /perde-yikama
+Allow: /yorgan-battaniye-yikama
+Allow: /hakkimizda
+Allow: /iletisim
+Allow: /referanslar
+Allow: /blog
 
 # CSS, JS ve resim dosyalarına izin ver
-Allow: /styles.css
-Allow: /script.js
-Allow: /navbar.js
-Allow: /footer.js
 Allow: /*.css
 Allow: /*.js
 Allow: /*.png
@@ -22,6 +22,34 @@ Allow: /*.gif
 Allow: /*.svg
 Allow: /*.ico
 Allow: /*.webp
+Allow: /favicon.ico
 
-# Crawl-delay (isteğe bağlı)
+# Admin panel ve API'leri gizle
+Disallow: /admin/
+Disallow: /api/
+Disallow: /vercel/
+Disallow: /.env
+Disallow: /package.json
+Disallow: /package-lock.json
+Disallow: /node_modules/
+
+# Sitemap
+Sitemap: https://oncuhaliyikama.com/sitemap.xml
+
+# Crawl-delay (Google için optimize)
+Crawl-delay: 1
+
+# Google özel kuralları
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+# Bing özel kuralları
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Yandex özel kuralları
+User-agent: Yandex
+Allow: /
 Crawl-delay: 1 

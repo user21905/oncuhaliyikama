@@ -57,10 +57,22 @@ function updateFooter(settings) {
     const service3 = document.getElementById('footer-service3');
     const service4 = document.getElementById('footer-service4');
     
-    if (service1) service1.textContent = settings.footer_service1 || 'Mobil Vinç Kiralama';
-    if (service2) service2.textContent = settings.footer_service2 || 'İnşaat Kurulum Hizmetleri';
-    if (service3) service3.textContent = settings.footer_service3 || 'Petrol Kuyusu Hizmetleri';
-    if (service4) service4.textContent = settings.footer_service4 || 'Petrol ve İnşaat Sahası';
+    if (service1) {
+        service1.textContent = settings.footer_service1 || 'Halı Yıkama';
+        service1.href = settings.footer_service1_url || '/hali-yikama';
+    }
+    if (service2) {
+        service2.textContent = settings.footer_service2 || 'Koltuk Yıkama';
+        service2.href = settings.footer_service2_url || '/koltuk-yikama';
+    }
+    if (service3) {
+        service3.textContent = settings.footer_service3 || 'Perde Yıkama';
+        service3.href = settings.footer_service3_url || '/perde-yikama';
+    }
+    if (service4) {
+        service4.textContent = settings.footer_service4 || 'Yorgan ve Battaniye Yıkama';
+        service4.href = settings.footer_service4_url || '/yorgan-battaniye-yikama';
+    }
 
     // İletişim bilgileri
     const phone = document.getElementById('footer-phone');
