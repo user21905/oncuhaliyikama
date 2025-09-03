@@ -34,7 +34,7 @@ Disallow: /package-lock.json
 Disallow: /node_modules/
 
 # Sitemap
-Sitemap: https://oncuhaliyikama.com/sitemap.xml
+Sitemap: https://haliyikamaoncu.com/sitemap.xml
 
 # Crawl-delay (Google için optimize)
 Crawl-delay: 1

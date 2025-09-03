@@ -46,10 +46,10 @@ app.use(helmet({
 app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
         ? [
-            process.env.DOMAIN, 
-            process.env.SITE_URL, 
-            'https://oncuhaliyikama.com',
-            'https://www.oncuhaliyikama.com',
+            process.env.DOMAIN,
+            process.env.SITE_URL,
+            'https://haliyikamaoncu.com',
+            'https://www.haliyikamaoncu.com',
             'https://oncu-hali-yikama.vercel.app',
             'https://*.vercel.app'
           ]

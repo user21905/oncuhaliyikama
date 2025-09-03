@@ -6,7 +6,7 @@
 
     <!-- Ana Sayfa - En Yüksek Öncelik -->
     <url>
-        <loc>https://oncuhaliyikama.com/</loc>
+        <loc>https://haliyikamaoncu.com/</loc>
         <lastmod>2025-09-03</lastmod>
         <changefreq>daily</changefreq>
         <priority>1.0</priority>
@@ -14,28 +14,28 @@
 
     <!-- Hizmet Sayfaları - Yüksek Öncelik -->
     <url>
-        <loc>https://oncuhaliyikama.com/hali-yikama</loc>
+        <loc>https://haliyikamaoncu.com/hali-yikama</loc>
         <lastmod>2025-09-03</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.9</priority>
     </url>
 
     <url>
-        <loc>https://oncuhaliyikama.com/koltuk-yikama</loc>
+        <loc>https://haliyikamaoncu.com/koltuk-yikama</loc>
         <lastmod>2025-09-03</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.9</priority>
     </url>
 
     <url>
-        <loc>https://oncuhaliyikama.com/perde-yikama</loc>
+        <loc>https://haliyikamaoncu.com/perde-yikama</loc>
         <lastmod>2025-09-03</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.9</priority>
     </url>
 
     <url>
-        <loc>https://oncuhaliyikama.com/yorgan-battaniye-yikama</loc>
+        <loc>https://haliyikamaoncu.com/yorgan-battaniye-yikama</loc>
         <lastmod>2025-09-03</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.9</priority>
@@ -43,7 +43,7 @@
 
     <!-- Hakkımızda Sayfası -->
     <url>
-        <loc>https://oncuhaliyikama.com/hakkimizda</loc>
+        <loc>https://haliyikamaoncu.com/hakkimizda</loc>
         <lastmod>2025-09-03</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
@@ -51,7 +51,7 @@
 
     <!-- İletişim Sayfası -->
     <url>
-        <loc>https://oncuhaliyikama.com/iletisim</loc>
+        <loc>https://haliyikamaoncu.com/iletisim</loc>
         <lastmod>2025-09-03</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
@@ -59,7 +59,7 @@
 
     <!-- Blog/Haberler (Gelecekte eklenebilir) -->
     <url>
-        <loc>https://oncuhaliyikama.com/blog</loc>
+        <loc>https://haliyikamaoncu.com/blog</loc>
         <lastmod>2025-09-03</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
@@ -67,7 +67,7 @@
 
     <!-- Referanslar -->
     <url>
-        <loc>https://oncuhaliyikama.com/referanslar</loc>
+        <loc>https://haliyikamaoncu.com/referanslar</loc>
         <lastmod>2025-09-03</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
@@ -75,7 +75,7 @@
 
     <!-- Admin Panel (Gizli - Düşük Öncelik) -->
     <url>
-        <loc>https://oncuhaliyikama.com/admin/dashboard</loc>
+        <loc>https://haliyikamaoncu.com/admin/dashboard</loc>
         <lastmod>2025-09-03</lastmod>
         <changefreq>never</changefreq>
         <priority>0.1</priority>
@@ -83,14 +83,14 @@
 
     <!-- API Endpoints (Gizli - Düşük Öncelik) -->
     <url>
-        <loc>https://oncuhaliyikama.com/api/settings</loc>
+        <loc>https://haliyikamaoncu.com/api/settings</loc>
         <lastmod>2025-09-03</lastmod>
         <changefreq>never</changefreq>
         <priority>0.1</priority>
     </url>
 
     <url>
-        <loc>https://oncuhaliyikama.com/api/services</loc>
+        <loc>https://haliyikamaoncu.com/api/services</loc>
         <lastmod>2025-09-03</lastmod>
         <changefreq>never</changefreq>
         <priority>0.1</priority>
